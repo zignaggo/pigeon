@@ -1,0 +1,35 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "enables the default permissions",
+  "windows": ["main"],
+  "platforms": ["linux", "macOS", "windows", "android", "iOS"],
+  "permissions": [
+    "core:default",
+    "core:event:default",
+    "core:path:default",
+    "dialog:default",
+    "dialog:allow-open",
+    "fs:default",
+    {
+      "identifier": "fs:allow-read-file",
+      "allow": [{ "path": "**" }]
+    },
+    {
+      "identifier": "fs:allow-write-file",
+      "allow": [
+        { "path": "**" },
+        { "path": "$APPCACHE/**" },
+        { "path": "$APPCACHE/*" }
+      ]
+    },
+    {
+      "identifier": "fs:allow-mkdir",
+      "allow": [{ "path": "$APPCACHE/**" }, { "path": "$APPCACHE" }]
+    },
+    {
+      "identifier": "fs:scope",
+      "allow": [{ "path": "**" }]
+    }
+  ]
+}
