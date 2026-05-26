@@ -7,6 +7,7 @@ use tokio::fs::File;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpListener;
 use tokio::sync::Mutex;
+use tokio::task::JoinHandle;
 
 pub const PORT: u16 = 7878;
 
@@ -36,13 +37,12 @@ struct ErrorEvent {
 #[derive(Default)]
 pub struct ServerState {
     running: Mutex<bool>,
+    task: Mutex<Option<JoinHandle<()>>>,
 }
 
 impl ServerState {
     pub fn new() -> Self {
-        Self {
-            running: Mutex::new(false),
-        }
+        Self::default()
     }
 }
 
@@ -76,7 +76,7 @@ pub async fn start(app: AppHandle, state: Arc<ServerState>, save_dir: String) ->
 
     let app_clone = app.clone();
     let save_dir_clone = save_dir.clone();
-    tokio::spawn(async move {
+    let task = tokio::spawn(async move {
         loop {
             match listener.accept().await {
                 Ok((stream, peer)) => {
@@ -102,6 +102,23 @@ pub async fn start(app: AppHandle, state: Arc<ServerState>, save_dir: String) ->
         }
     });
 
+    *state.task.lock().await = Some(task);
+
+    Ok(())
+}
+
+pub async fn stop(state: Arc<ServerState>) -> Result<(), String> {
+    let mut running = state.running.lock().await;
+    if !*running {
+        return Ok(());
+    }
+
+    if let Some(task) = state.task.lock().await.take() {
+        task.abort();
+    }
+    *running = false;
+
+    log::info!("server stopped");
     Ok(())
 }
 

@@ -1,0 +1,33 @@
+import { invoke } from '@tauri-apps/api/core'
+import { open as openDialog } from '@tauri-apps/plugin-dialog'
+import type { SafDir } from './types'
+
+export const getLocalIp = () => invoke<string>('get_local_ip')
+
+export const getDefaultSaveDir = () => invoke<string>('default_save_dir')
+
+export const startServer = (saveDir: string) =>
+  invoke<void>('start_server', { saveDir })
+
+export const stopServer = () => invoke<void>('stop_server')
+
+export const sendFile = (targetIp: string, filePath: string) =>
+  invoke<void>('send_file', { targetIp, filePath })
+
+async function pickPath(directory: boolean): Promise<string | null> {
+  const selected = await openDialog({ directory, multiple: false })
+  if (typeof selected === 'string') return selected
+  if (selected && typeof selected === 'object' && 'path' in selected) {
+    return (selected as { path: string }).path
+  }
+  return null
+}
+
+export const pickDirectory = () => pickPath(true)
+export const pickFile = () => pickPath(false)
+
+// SAF (Android): picker de árvore de diretório + import do arquivo recebido.
+export const safPickDir = () => invoke<SafDir | null>('saf_pick_dir')
+
+export const safImportFile = (dir: SafDir, srcPath: string, name: string) =>
+  invoke<void>('saf_import_file', { dir, srcPath, name })

@@ -1918,25 +1918,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "local-send"
-version = "0.1.0"
-dependencies = [
- "bytes",
- "futures-util",
- "local-ip-address",
- "log",
- "serde",
- "serde_json",
- "tauri",
- "tauri-build",
- "tauri-plugin-dialog",
- "tauri-plugin-fs",
- "tauri-plugin-log",
- "tokio",
- "tokio-util",
-]
-
-[[package]]
 name = "lock_api"
 version = "0.4.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2446,6 +2427,26 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e57fef6bc5981e38c2ce2d63bfa546861309f875b8a75f092d1d54ae2d64f266"
 dependencies = [
  "siphasher",
+]
+
+[[package]]
+name = "pigeon"
+version = "0.1.0"
+dependencies = [
+ "bytes",
+ "futures-util",
+ "local-ip-address",
+ "log",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-build",
+ "tauri-plugin-android-fs",
+ "tauri-plugin-dialog",
+ "tauri-plugin-fs",
+ "tauri-plugin-log",
+ "tokio",
+ "tokio-util",
 ]
 
 [[package]]
@@ -3352,6 +3353,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "sync_async"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b815ef8e053247ad785b136d233ee9c9872eeda5319f2719d57cac88270c3dd9"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.117",
+]
+
+[[package]]
 name = "sync_wrapper"
 version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3574,6 +3586,25 @@ dependencies = [
  "serde_json",
  "tauri-utils",
  "walkdir",
+]
+
+[[package]]
+name = "tauri-plugin-android-fs"
+version = "28.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b12e49f103e69e0f35e10983961135128e7fa5d38ec4517efecb0e6582d4c1d8"
+dependencies = [
+ "base64 0.22.1",
+ "glob",
+ "percent-encoding",
+ "schemars 0.8.22",
+ "serde",
+ "serde_json",
+ "sync_async",
+ "tauri",
+ "tauri-plugin",
+ "tauri-plugin-fs",
+ "thiserror 2.0.18",
 ]
 
 [[package]]
