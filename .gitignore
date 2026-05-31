@@ -12,5 +12,8 @@ dist-ssr
 __unconfig*
 todos.json
 
+# TanStack Router — generated route tree
+src/routeTree.gen.ts
+
 *.jks
 keystore.properties

@@ -1,0 +1,18 @@
+{
+  "ignore": {
+    "rules": ["react-doctor/no-danger"],
+    "files": ["src/generated/**", "docs/**", "dist/**"],
+    "overrides": [
+      {
+        "files": ["components/search/HighlightedSnippet.tsx"],
+        "rules": ["react-doctor/no-danger"]
+      }
+    ]
+  },
+  "rules": {
+    "react-doctor/no-array-index-as-key": "error"
+  },
+  "categories": {
+    "React Native": "warn"
+  }
+}

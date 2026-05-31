@@ -7,7 +7,7 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Pigeon design tokens — dark theme only. Mirrors src/lib/pigeon.ts. Accent = coral. */
+/* Pigeon design tokens — dark theme only. Mirrors the dark palette in docs/design/. Accent = coral. */
 :root {
   --background: #1a1612; /* cream */
   --foreground: #f4ece0; /* ink */
@@ -141,7 +141,7 @@ body,
   }
 }
 
-/* Pigeon onboarding — floating brand mark */
+/* Pigeon mobile animations (ported from docs/design prototype) */
 @keyframes pmFloat {
   0%,
   100% {
@@ -150,6 +150,88 @@ body,
   50% {
     transform: translateY(-4px);
   }
+}
+
+@keyframes pmPulse {
+  0% {
+    transform: scale(0.7);
+    opacity: 0.55;
+  }
+  70% {
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.35);
+    opacity: 0;
+  }
+}
+
+@keyframes pmDot {
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scale(0.85);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes pmSlideIn {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes pmSheetUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes pmFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pmScrim {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pmRise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* hide scrollbars on scrollable screens */
+.pm-screen {
+  scrollbar-width: none;
+}
+.pm-screen::-webkit-scrollbar {
+  width: 0;
+  height: 0;
 }
 
 .site-footer {

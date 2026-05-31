@@ -1,24 +1,8 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import {
-  RouterProvider,
-  createRouter,
-  createRootRoute,
-  createRoute,
-  Outlet,
-} from '@tanstack/react-router'
-import Home from './routes/index'
+import { RouterProvider, createRouter } from '@tanstack/react-router'
+import { routeTree } from './routeTree.gen'
 import './styles.css'
-
-const rootRoute = createRootRoute({ component: () => <Outlet /> })
-
-const indexRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/',
-  component: Home,
-})
-
-const routeTree = rootRoute.addChildren([indexRoute])
 
 const router = createRouter({ routeTree })
 

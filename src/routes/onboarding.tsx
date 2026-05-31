@@ -1,15 +1,20 @@
-// Onboarding / nickname — ported from docs/design/pombo-mobile-screens.jsx
-// (NickScreen), dark theme only. Fills the window instead of the iOS bezel,
-// constrained to a centered column so it reads well on desktop too.
-// Colors come from shadcn tokens (see src/styles.css); only structural sizing
-// stays inline.
 import { useEffect, useRef, useState } from "react";
+import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { initialsOf } from "@/lib/utils";
-import { PigeonLogo, PigeonAvatar, DeviceGlyph, StatusDot } from "../pigeon/atoms";
+import { getNick, setNick } from "@/lib/nick";
+import { PigeonLogo, PigeonAvatar, DeviceGlyph, StatusDot } from "@/components/pigeon/atoms";
 
 const MONO = '"Geist Mono", ui-monospace, monospace';
 
-export function NickScreen({ onEnter }: { onEnter: (nick: string) => void }) {
+export const Route = createFileRoute("/onboarding")({
+  beforeLoad: () => {
+    if (getNick()) throw redirect({ to: "/rede" });
+  },
+  component: OnboardingScreen,
+});
+
+function OnboardingScreen() {
+  const navigate = useNavigate();
   const [draft, setDraft] = useState("");
   const ref = useRef<HTMLInputElement>(null);
 
@@ -21,7 +26,9 @@ export function NickScreen({ onEnter }: { onEnter: (nick: string) => void }) {
   const ok = draft.trim().length >= 1;
   const ini = ok ? initialsOf(draft) : "·";
   const go = () => {
-    if (ok) onEnter(draft.trim());
+    if (!ok) return;
+    setNick(draft.trim());
+    navigate({ to: "/rede" });
   };
 
   return (
@@ -76,7 +83,7 @@ export function NickScreen({ onEnter }: { onEnter: (nick: string) => void }) {
           </div>
 
           {/* input */}
-          <label className="text-muted-foreground pl-1 text-xs font-bold uppercase tracking-[0.6px]">
+          <label htmlFor="nick" className="text-muted-foreground pl-1 text-xs font-bold uppercase tracking-[0.6px]">
             Como quer ser chamado?
           </label>
           <div
@@ -85,6 +92,7 @@ export function NickScreen({ onEnter }: { onEnter: (nick: string) => void }) {
           >
             <input
               ref={ref}
+              id="nick"
               value={draft}
               maxLength={20}
               onChange={(e) => setDraft(e.target.value)}
@@ -113,6 +121,7 @@ export function NickScreen({ onEnter }: { onEnter: (nick: string) => void }) {
         {/* bottom CTA */}
         <div className="flex flex-col gap-3.5 px-7 pb-[30px] pt-3.5">
           <button
+            type="button"
             onClick={go}
             disabled={!ok}
             className={

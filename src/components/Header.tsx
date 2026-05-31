@@ -1,7 +1,7 @@
 export function Header() {
   return (
     <header className="flex items-center gap-3.5">
-      <div className="bg-primary flex h-12 w-12 items-center justify-center rounded-[14px] text-[26px] shadow-[0_6px_16px_rgba(0,0,0,0.3)] transition-transform duration-300 hover:scale-105 hover:-rotate-6">
+      <div className="bg-primary flex size-12 items-center justify-center rounded-[14px] text-[26px] shadow-[0_6px_16px_rgba(0,0,0,0.3)] transition-transform duration-300 hover:scale-105 hover:-rotate-6">
         🕊️
       </div>
       <div>

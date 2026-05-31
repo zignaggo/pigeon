@@ -26,6 +26,6 @@ const variants: Record<Variant, string> = {
 
 type Props = ButtonHTMLAttributes<HTMLButtonElement> & { variant?: Variant }
 
-export function Button({ variant = 'primary', className, ...props }: Props) {
-  return <button className={cn(base, variants[variant], className)} {...props} />
+export function Button({ variant = 'primary', className, type = 'button', ...props }: Props) {
+  return <button type={type} className={cn(base, variants[variant], className)} {...props} />
 }

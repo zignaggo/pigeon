@@ -32,29 +32,87 @@ export function PigeonLogo({ size = 44, radius }: { size?: number; radius?: numb
   );
 }
 
-// Geometric monogram avatar. Defaults to the coral tint; pass `className` to
-// override the color (e.g. a peer tint).
+// Maps a design tint name to its shadcn chart token.
+export type Tint = "coral" | "sun" | "mint" | "sky" | "lilac";
+const TINT_VAR: Record<Tint, string> = {
+  coral: "--chart-1",
+  sun: "--chart-2",
+  mint: "--chart-3",
+  sky: "--chart-4",
+  lilac: "--chart-5",
+};
+
+// Geometric monogram avatar. With no `tint` it uses the coral accent; a `tint`
+// renders a soft chart-token wash + matching foreground.
 export function PigeonAvatar({
   name = "AB",
   size = 44,
   shape = "squircle",
+  tint,
   className,
 }: {
   name?: string;
   size?: number;
   shape?: "squircle" | "circle";
+  tint?: Tint;
   className?: string;
 }) {
   const borderRadius = shape === "circle" ? "50%" : size * 0.36;
+  const tintStyle = tint
+    ? {
+        background: `color-mix(in oklab, var(${TINT_VAR[tint]}) 20%, transparent)`,
+        color: `var(${TINT_VAR[tint]})`,
+      }
+    : undefined;
   return (
     <div
       className={cn(
-        "bg-accent text-primary flex shrink-0 items-center justify-center font-bold",
+        "flex shrink-0 items-center justify-center font-bold",
+        !tint && "bg-accent text-primary",
         className,
       )}
-      style={{ width: size, height: size, borderRadius, fontSize: size * 0.36, letterSpacing: -0.5 }}
+      style={{ width: size, height: size, borderRadius, fontSize: size * 0.36, letterSpacing: -0.5, ...tintStyle }}
     >
       {name}
+    </div>
+  );
+}
+
+const MONO = '"Geist Mono", ui-monospace, monospace';
+const EXT_VAR: Record<string, string> = {
+  pdf: "--chart-1",
+  zip: "--chart-2",
+  key: "--chart-2",
+  png: "--chart-3",
+  jpg: "--chart-3",
+  xlsx: "--chart-3",
+  doc: "--chart-4",
+  mp4: "--chart-5",
+};
+
+// File "tag" icon with the extension printed in mono.
+export function FileIcon({ ext = "pdf", size = 34 }: { ext?: string; size?: number }) {
+  const v = EXT_VAR[ext] || "--muted-foreground";
+  return (
+    <div
+      className="relative flex shrink-0 items-end justify-center font-bold"
+      style={{
+        width: size,
+        height: size * 1.18,
+        borderRadius: 6,
+        background: `color-mix(in oklab, var(${v}) 16%, transparent)`,
+        color: `var(${v})`,
+        padding: 3,
+        fontSize: size * 0.28,
+        letterSpacing: 0.3,
+        fontFamily: MONO,
+      }}
+    >
+      <span
+        className="absolute"
+        style={{ top: 4, left: 5, width: 8, height: 3, borderRadius: 2, background: "color-mix(in oklab, var(--foreground) 30%, transparent)" }}
+      />
+      {ext.toUpperCase()}
     </div>
   );
 }

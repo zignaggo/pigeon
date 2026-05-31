@@ -4,14 +4,16 @@ type Props = {
   checked: boolean
   onChange: () => void
   disabled?: boolean
+  ariaLabel?: string
 }
 
-export function Switch({ checked, onChange, disabled }: Props) {
+export function Switch({ checked, onChange, disabled, ariaLabel = 'Alternar' }: Props) {
   return (
     <button
       type="button"
       role="switch"
       aria-checked={checked}
+      aria-label={ariaLabel}
       onClick={onChange}
       disabled={disabled}
       className={cn(
