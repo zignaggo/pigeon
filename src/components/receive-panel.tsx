@@ -1,10 +1,10 @@
-import { Panel, FieldLabel } from './Panel'
-import { Button } from './ui/Button'
-import { Input } from './ui/Input'
-import { Switch } from './ui/Switch'
+import { Panel, FieldLabel } from './panel'
+import { Button } from './ui/button'
+import { Input } from './ui/input'
+import { Switch } from './ui/switch'
 import { cn } from '../lib/utils'
 import { isMobile } from '../lib/platform'
-import { usePigeon } from '../context/PigeonContext'
+import { usePigeon } from '../context/pigeon-context'
 
 const mobile = isMobile()
 

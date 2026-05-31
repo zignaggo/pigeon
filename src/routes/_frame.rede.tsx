@@ -5,7 +5,7 @@ import { getNick } from "@/lib/nick";
 import { initialsOf } from "@/lib/utils";
 import { PigeonAvatar, StatusDot } from "@/components/pigeon/atoms";
 import { PMAppBar, PMIconButton, PMRadarHero, PMSectionLabel, PMCard, PMPeerRow } from "@/components/pigeon/mobile";
-import { RequestSheet } from "@/components/RequestSheet";
+import { RequestSheet } from "@/components/request-sheet";
 
 const QrIcon = (
   <svg width="18" height="18" viewBox="0 0 15 15" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">

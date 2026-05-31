@@ -1,4 +1,4 @@
-import { usePigeon } from '../context/PigeonContext'
+import { usePigeon } from '../context/pigeon-context'
 
 export function StatusLog() {
   const { logs } = usePigeon()

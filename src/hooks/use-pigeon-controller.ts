@@ -9,8 +9,8 @@ import { appCacheDir, join } from '@tauri-apps/api/path'
 import * as api from '../lib/api'
 import { deriveNameFromUri, fileNameOf, formatBytes } from '../lib/format'
 import type { PigeonContextValue, Progress, SafDir } from '../lib/types'
-import { useLogs } from './useLogs'
-import { useTransferEvents } from './useTransferEvents'
+import { useLogs } from './use-logs'
+import { useTransferEvents } from './use-transfer-events'
 
 export function usePigeonController(): PigeonContextValue {
   const { logs, log } = useLogs()

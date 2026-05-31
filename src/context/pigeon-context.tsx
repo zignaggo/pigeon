@@ -1,5 +1,5 @@
 import { createContext, useContext, type ReactNode } from 'react'
-import { usePigeonController } from '../hooks/usePigeonController'
+import { usePigeonController } from '../hooks/use-pigeon-controller'
 import type { PigeonContextValue } from '../lib/types'
 
 const PigeonContext = createContext<PigeonContextValue | null>(null)

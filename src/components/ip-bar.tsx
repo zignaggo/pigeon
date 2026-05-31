@@ -1,5 +1,5 @@
 import { cn } from '../lib/utils'
-import { usePigeon } from '../context/PigeonContext'
+import { usePigeon } from '../context/pigeon-context'
 
 export function IpBar() {
   const { localIp, serverRunning } = usePigeon()
