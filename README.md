@@ -1,204 +1,77 @@
-Welcome to your new TanStack Start app!
+# 🕊️ Pigeon
 
-# Getting Started
+Transferência de arquivos na **rede local**, sem internet e sem servidor central. O mesmo código roda no **Windows 11** e no **Android** via **Tauri 2** — os dispositivos se descobrem na LAN e trocam arquivos diretamente.
 
-To run this application:
+## Funcionalidades (primeira versão)
+
+- **Descoberta automática** de dispositivos na rede (UDP multicast).
+- **Transferência direta** de arquivos para os dispositivos descobertos (TCP). Nesta versão o canal é em **texto puro**, sem criptografia.
+- **Integridade da entrega**: o arquivo chega completo, com os bytes na ordem correta (header com tamanho prefixado + leitura exata) e a extensão correta (detecção por *magic bytes*).
+
+Fora do escopo desta versão: criptografia, resume, múltiplos arquivos por transferência, aprovação de conexão. Veja [`CLAUDE.md`](CLAUDE.md) para o escopo completo.
+
+## Stack
+
+- **Tauri 2** — backend em Rust (Tokio).
+- **Frontend** — React + TypeScript, [TanStack Router](https://tanstack.com/router) (file-based routing, SPA), Tailwind CSS v4.
+- **Targets** — `x86_64-pc-windows-msvc` e `aarch64-linux-android`.
+- **Lint/format** — oxlint + oxfmt (configs em `oxlint.config.ts` / `oxfmt.config.ts`).
+
+## Pré-requisitos
+
+- [Bun](https://bun.sh)
+- Toolchain Rust + [pré-requisitos do Tauri 2](https://tauri.app/start/prerequisites/)
+- Para Android: Android SDK + NDK configurados
+
+## Desenvolvimento
 
 ```bash
 bun install
-bun --bun run dev
+
+bun run dev          # só o frontend no navegador (Vite, porta 3000)
+bun run dev:desktop  # app desktop (Tauri) — Windows
+bun run dev:android  # app no emulador/device Android
 ```
 
-# Building For Production
+`dev:expose` sobe o Vite acessível na rede (`--host`), útil para o Tauri mobile.
 
-To build this application for production:
+## Build
 
 ```bash
-bun --bun run build
+bun run build:desktop   # binário Windows
+bun run build:android   # APK/AAB Android
+bun run build           # só os assets do frontend
 ```
 
-## Testing
-
-This project uses [Vitest](https://vitest.dev/) for testing. You can run the tests with:
+## Testes e qualidade
 
 ```bash
-bun --bun run test
+bun run test     # Vitest
+bun run doctor   # react-doctor (lint/a11y/bundle/arquitetura)
 ```
 
-## Styling
+## Como funciona
 
-This project uses [Tailwind CSS](https://tailwindcss.com/) for styling.
+**Descoberta** — cada dispositivo anuncia presença periodicamente via UDP multicast (grupo `239.255.42.99`, porta `7879`) e escuta os anúncios dos outros, montando uma lista viva de peers. Plano detalhado em [`docs/discovery-multicast.md`](docs/discovery-multicast.md).
 
-### Removing Tailwind CSS
+**Transferência** — conexão TCP direta na porta fixa `7878`:
 
-If you prefer not to use Tailwind CSS:
-
-1. Remove the demo pages in `src/routes/demo/`
-2. Replace the Tailwind import in `src/styles.css` with your own styles
-3. Remove `tailwindcss()` from the plugins array in `vite.config.ts`
-4. Uninstall the packages: `bun install @tailwindcss/vite tailwindcss -D`
-
-## Shadcn
-
-Add components using the latest version of [Shadcn](https://ui.shadcn.com/).
-
-```bash
-pnpm dlx shadcn@latest add button
+```
+[4 bytes: tamanho do header em u32 big-endian]
+[N bytes: header JSON { "name": "arquivo.pdf", "size": 12345 }]
+[size bytes: conteúdo do arquivo]
 ```
 
-## Routing
+## Estrutura
 
-This project uses [TanStack Router](https://tanstack.com/router) with file-based routing. Routes are managed as files in `src/routes`.
-
-### Adding A Route
-
-To add a new route to your application just add a new file in the `./src/routes` directory.
-
-TanStack will automatically generate the content of the route file for you.
-
-Now that you have two routes you can use a `Link` component to navigate between them.
-
-### Adding Links
-
-To use SPA (Single Page Application) navigation you will need to import the `Link` component from `@tanstack/react-router`.
-
-```tsx
-import { Link } from "@tanstack/react-router";
+```
+src/            # frontend (rotas em src/routes/, componentes, hooks, lib)
+src-tauri/      # backend Rust (server.rs, client.rs, discovery.rs)
+docs/           # design system + plano de descoberta
 ```
 
-Then anywhere in your JSX you can use it like so:
+## Documentação
 
-```tsx
-<Link to="/about">About</Link>
-```
-
-This will create a link that will navigate to the `/about` route.
-
-More information on the `Link` component can be found in the [Link documentation](https://tanstack.com/router/v1/docs/framework/react/api/router/linkComponent).
-
-### Using A Layout
-
-In the File Based Routing setup the layout is located in `src/routes/__root.tsx`. Anything you add to the root route will appear in all the routes. The route content will appear in the JSX where you render `{children}` in the `shellComponent`.
-
-Here is an example layout that includes a header:
-
-```tsx
-import { HeadContent, Scripts, createRootRoute } from "@tanstack/react-router";
-
-export const Route = createRootRoute({
-  head: () => ({
-    meta: [
-      { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "My App" },
-    ],
-  }),
-  shellComponent: ({ children }) => (
-    <html lang="en">
-      <head>
-        <HeadContent />
-      </head>
-      <body>
-        <header>
-          <nav>
-            <Link to="/">Home</Link>
-            <Link to="/about">About</Link>
-          </nav>
-        </header>
-        {children}
-        <Scripts />
-      </body>
-    </html>
-  ),
-});
-```
-
-More information on layouts can be found in the [Layouts documentation](https://tanstack.com/router/latest/docs/framework/react/guide/routing-concepts#layouts).
-
-## Server Functions
-
-TanStack Start provides server functions that allow you to write server-side code that seamlessly integrates with your client components.
-
-```tsx
-import { createServerFn } from "@tanstack/react-start";
-
-const getServerTime = createServerFn({
-  method: "GET",
-}).handler(async () => {
-  return new Date().toISOString();
-});
-
-// Use in a component
-function MyComponent() {
-  const [time, setTime] = useState("");
-
-  useEffect(() => {
-    getServerTime().then(setTime);
-  }, []);
-
-  return <div>Server time: {time}</div>;
-}
-```
-
-## API Routes
-
-You can create API routes by using the `server` property in your route definitions:
-
-```tsx
-import { createFileRoute } from "@tanstack/react-router";
-import { json } from "@tanstack/react-start";
-
-export const Route = createFileRoute("/api/hello")({
-  server: {
-    handlers: {
-      GET: () => json({ message: "Hello, World!" }),
-    },
-  },
-});
-```
-
-## Data Fetching
-
-There are multiple ways to fetch data in your application. You can use TanStack Query to fetch data from a server. But you can also use the `loader` functionality built into TanStack Router to load the data for a route before it's rendered.
-
-For example:
-
-```tsx
-import { createFileRoute } from "@tanstack/react-router";
-
-export const Route = createFileRoute("/people")({
-  loader: async () => {
-    const response = await fetch("https://swapi.dev/api/people");
-    return response.json();
-  },
-  component: PeopleComponent,
-});
-
-function PeopleComponent() {
-  const data = Route.useLoaderData();
-  return (
-    <ul>
-      {data.results.map((person) => (
-        <li key={person.name}>{person.name}</li>
-      ))}
-    </ul>
-  );
-}
-```
-
-Loaders simplify your data fetching logic dramatically. Check out more information in the [Loader documentation](https://tanstack.com/router/latest/docs/framework/react/guide/data-loading#loader-parameters).
-
-# Demo files
-
-Files prefixed with `demo` can be safely deleted. They are there to provide a starting point for you to play around with the features you've installed.
-
-# Learn More
-
-You can learn more about all of the offerings from TanStack in the [TanStack documentation](https://tanstack.com).
-
-For TanStack Start specific documentation, visit [TanStack Start](https://tanstack.com/start).
-
-### Net tauri plugins
-
-https://crates.io/crates/tauri-plugin-tcp
-https://crates.io/crates/tauri-plugin-udp
+- [`CLAUDE.md`](CLAUDE.md) — contexto do produto, stack, protocolo e cuidados de Android.
+- [`docs/discovery-multicast.md`](docs/discovery-multicast.md) — plano da descoberta via multicast.
+- [`docs/design/`](docs/design/README.md) — bundle de design (referência visual).
