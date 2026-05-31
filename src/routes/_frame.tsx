@@ -6,7 +6,9 @@ import {
   useLocation,
 } from "@tanstack/react-router";
 
+import { DebugOverlay } from "@/components/devtools/debug-overlay";
 import { PMTabBar, type Tab } from "@/components/pigeon/mobile";
+import { useDebugSetup } from "@/hooks/use-debug";
 import { useDiscovery } from "@/hooks/use-peers";
 import { getNick } from "@/lib/nick";
 
@@ -25,6 +27,7 @@ export const Route = createFileRoute("/_frame")({
 
 function FrameLayout() {
   useDiscovery();
+  useDebugSetup();
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const active: Tab = pathname.startsWith("/historico")
@@ -50,6 +53,7 @@ function FrameLayout() {
           active={active}
           onChange={(t) => navigate({ to: TAB_PATH[t] })}
         />
+        <DebugOverlay />
       </div>
     </div>
   );
