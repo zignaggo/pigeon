@@ -33,10 +33,9 @@ export function PMAppBar({
   return (
     <div
       className={cn(
-        "bg-card/80 z-[5] flex shrink-0 items-center gap-3 pl-[18px] pr-3.5 backdrop-blur-md",
-        big ? "border-none pb-1.5" : "border-border border-b pb-3",
+        "bg-card/80 z-5 flex shrink-0 items-center gap-3 pl-4.5 pr-3.5 backdrop-blur-md pt-2",
+        big ? "border-none pb-2" : "border-border border-b pb-3",
       )}
-      style={{ paddingTop: 22 }}
     >
       {left}
       <div className="min-w-0 flex-1">
@@ -50,7 +49,7 @@ export function PMAppBar({
           {title}
         </div>
         {subtitle && (
-          <div className="text-muted-foreground mt-[3px] flex items-center gap-1.5 text-[12.5px]">
+          <div className="text-muted-foreground mt-0.75 flex items-center gap-1.5 text-[12.5px]">
             {subtitle}
           </div>
         )}
@@ -216,7 +215,7 @@ export function PMFileRow({
   return (
     <div
       className={cn(
-        "flex items-center gap-3 px-[15px] py-3",
+        "flex items-center gap-3 px-3.75 py-3",
         !isLast && "border-border border-b",
       )}
     >
@@ -430,7 +429,7 @@ export function PMRadarHero({
   ];
   const letters = ["A", "B", "C", "D", "E"];
   return (
-    <div className="relative h-[200px] shrink-0 overflow-hidden">
+    <div className="relative h-80 shrink-0 overflow-hidden">
       {/* glow */}
       <div
         className="absolute left-1/2 top-[54%] size-[320px] -translate-x-1/2 -translate-y-1/2 rounded-full"

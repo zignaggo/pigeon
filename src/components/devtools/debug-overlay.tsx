@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { useDebugLogs } from "@/hooks/use-debug";
+import { useLocalIp } from "@/hooks/use-local-ip";
 import { restartDiscovery, usePeers } from "@/hooks/use-peers";
-import { getLocalIp } from "@/lib/api";
 import { getDeviceId } from "@/lib/device-id";
 import { clearLogs, getLogs, type LogLevel } from "@/lib/log-store";
 import { getNick } from "@/lib/nick";
@@ -65,7 +65,8 @@ export function DebugOverlay() {
 function DebugPanel({ onClose }: { onClose: () => void }) {
   const logs = useDebugLogs();
   const peers = usePeers();
-  const [localIp, setLocalIp] = useState("—");
+  const { data: localIpData, isError: localIpError } = useLocalIp();
+  const localIp = localIpError ? "indisponível" : (localIpData ?? "—");
   const [rescanning, setRescanning] = useState(false);
 
   const rescan = async () => {
@@ -76,16 +77,6 @@ function DebugPanel({ onClose }: { onClose: () => void }) {
       setRescanning(false);
     }
   };
-
-  useEffect(() => {
-    let active = true;
-    getLocalIp()
-      .then((ip) => active && setLocalIp(ip))
-      .catch(() => active && setLocalIp("indisponível"));
-    return () => {
-      active = false;
-    };
-  }, []);
 
   const copy = () => {
     const text = getLogs()

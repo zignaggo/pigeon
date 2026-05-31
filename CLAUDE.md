@@ -8,6 +8,7 @@
 
 - **Não inclua comentários no código gerado.** Escreva código autoexplicativo (nomes claros), sem comentários explicativos, de cabeçalho ou inline. Exceção: só mantenha um comentário se for estritamente necessário para o funcionamento (ex.: diretivas exigidas por ferramentas, como `eslint-disable` ou `@ts-expect-error`).
 - **Nomes de arquivos do front sempre em kebab-case:** tudo minúsculo, separado por `-` (ex.: `use-algo.ts`, `request-sheet.tsx`, `send-screen.tsx`). Sem PascalCase nem camelCase no nome do arquivo, mesmo quando o componente exportado é PascalCase.
+- **Busca de dados assíncronos via TanStack Query (`useQuery`/`useMutation`), não `useState` + `useEffect` manual.** Encapsule cada fonte num hook (ex.: `use-local-ip.ts`, `use-history.ts`) com `queryKey` própria — assim o cache/dedup é compartilhado entre componentes.
 
 ## O que é o Pigeon
 

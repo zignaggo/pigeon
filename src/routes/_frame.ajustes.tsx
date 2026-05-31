@@ -98,7 +98,7 @@ function SettingsScreen() {
   return (
     <>
       <PMAppBar big title="Ajustes" />
-      <div className="pm-screen flex-1 overflow-auto px-4 pb-5 pt-1">
+      <div className="pm-screen flex-1 overflow-auto px-4 pb-5 pt-4">
         <PMCard>
           <div className="flex items-center gap-3.5 px-[15px] py-4">
             <PigeonAvatar name={me} size={52} shape="squircle" />

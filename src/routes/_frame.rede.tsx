@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 
 import { PigeonAvatar, StatusDot } from "@/components/pigeon/atoms";
+import { IpAddress } from "@/components/pigeon/ip-address";
 import {
   PMAppBar,
   PMIconButton,
@@ -64,7 +65,8 @@ function NetworkScreen() {
           </PMIconButton>
         }
       />
-      <div className="pm-screen flex-1 overflow-auto px-4 pb-5 pt-1">
+      <IpAddress />
+      <div className="pm-screen flex-1 overflow-auto px-4 pb-5">
         <PMRadarHero count={peers.length} me={me} />
         <div className="mt-1.5">
           <PMSectionLabel right={`${peers.length} online`}>

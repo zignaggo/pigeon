@@ -76,7 +76,7 @@ function HistoryScreen() {
   return (
     <>
       <PMAppBar big title="Histórico" />
-      <div className="pm-screen flex-1 overflow-auto px-4 pb-5 pt-1">
+      <div className="pm-screen flex-1 overflow-auto px-4 pb-5 pt-4">
         {isLoading ? (
           <div className="text-muted-foreground mt-10 text-center text-[13px]">
             Carregando…
