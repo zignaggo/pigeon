@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { useDebugLogs } from "@/hooks/use-debug";
-import { usePeers } from "@/hooks/use-peers";
+import { restartDiscovery, usePeers } from "@/hooks/use-peers";
 import { getLocalIp } from "@/lib/api";
 import { getDeviceId } from "@/lib/device-id";
 import { clearLogs, getLogs, type LogLevel } from "@/lib/log-store";
@@ -66,6 +66,16 @@ function DebugPanel({ onClose }: { onClose: () => void }) {
   const logs = useDebugLogs();
   const peers = usePeers();
   const [localIp, setLocalIp] = useState("—");
+  const [rescanning, setRescanning] = useState(false);
+
+  const rescan = async () => {
+    setRescanning(true);
+    try {
+      await restartDiscovery();
+    } finally {
+      setRescanning(false);
+    }
+  };
 
   useEffect(() => {
     let active = true;
@@ -145,6 +155,30 @@ function DebugPanel({ onClose }: { onClose: () => void }) {
         <Info label="plataforma" value={platformLabel()} />
         <Info label="tauri" value={isTauri() ? "sim" : "não (browser)"} />
         <Info label="peers" value={String(peers.length)} />
+      </div>
+
+      <div className="border-border shrink-0 border-b px-4 py-2.5">
+        <button
+          type="button"
+          onClick={rescan}
+          disabled={rescanning}
+          className="bg-primary flex w-full items-center justify-center gap-2 rounded-[12px] border-none py-2.5 text-[13px] font-bold text-white disabled:opacity-60"
+        >
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className={rescanning ? "animate-spin" : undefined}
+          >
+            <path d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9M13.5 2v3h-3" />
+          </svg>
+          {rescanning ? "Rodando…" : "Rodar descoberta de novo"}
+        </button>
       </div>
 
       <div

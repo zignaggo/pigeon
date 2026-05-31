@@ -10,14 +10,15 @@ import type { DiscoveredPeer } from "@/lib/types";
 
 export function useDiscovery(): void {
   useEffect(() => {
+    const nick = getNick() ?? "";
+    const deviceId = getDeviceId();
+    addLog("info", "discovery", `start nick=${nick} id=${deviceId.slice(0, 8)}`);
+
     const unlisten = listen<{ peers: DiscoveredPeer[] }>("peers", (event) => {
       setPeers(event.payload.peers);
       addLog("event", "discovery", `peers: ${event.payload.peers.length}`);
     });
 
-    const nick = getNick() ?? "";
-    const deviceId = getDeviceId();
-    addLog("info", "discovery", `start nick=${nick} id=${deviceId.slice(0, 8)}`);
     void startDiscovery(nick, deviceId).catch((e) =>
       addLog("error", "discovery", `start falhou: ${String(e)}`),
     );
@@ -29,6 +30,21 @@ export function useDiscovery(): void {
       addLog("info", "discovery", "stop");
     };
   }, []);
+}
+
+export async function restartDiscovery(): Promise<void> {
+  addLog("info", "discovery", "restart");
+  setPeers([]);
+  try {
+    await stopDiscovery();
+  } catch (e) {
+    addLog("warn", "discovery", `stop: ${String(e)}`);
+  }
+  try {
+    await startDiscovery(getNick() ?? "", getDeviceId());
+  } catch (e) {
+    addLog("error", "discovery", `restart falhou: ${String(e)}`);
+  }
 }
 
 export function usePeers(): DiscoveredPeer[] {

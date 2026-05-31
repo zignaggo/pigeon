@@ -290,10 +290,12 @@ export function PMToggle({
   on = true,
   onChange,
   ariaLabel = "Alternar",
+  disabled = false,
 }: {
   on?: boolean;
   onChange?: (v: boolean) => void;
   ariaLabel?: string;
+  disabled?: boolean;
 }) {
   return (
     <button
@@ -301,10 +303,12 @@ export function PMToggle({
       role="switch"
       aria-checked={on}
       aria-label={ariaLabel}
+      disabled={disabled}
       onClick={() => onChange?.(!on)}
       className={cn(
         "relative h-7 w-[46px] shrink-0 rounded-[14px] border-none p-0 transition-colors",
         on ? "bg-primary" : "bg-muted",
+        disabled && "cursor-not-allowed opacity-50",
       )}
     >
       <span
