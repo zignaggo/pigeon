@@ -2,7 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { FileIcon } from "@/components/pigeon/atoms";
 import { PMAppBar, PMSectionLabel, PMCard } from "@/components/pigeon/mobile";
-import { MHISTORY, type HistoryItem } from "@/lib/mock";
+import { useHistory } from "@/hooks/use-history";
+import type { HistoryItem } from "@/lib/types";
 
 const MONO = '"Geist Mono", ui-monospace, monospace';
 
@@ -70,25 +71,66 @@ function Item({ it, isLast }: { it: HistoryItem; isLast?: boolean }) {
 }
 
 function HistoryScreen() {
+  const { data: groups = [], isLoading } = useHistory();
+
   return (
     <>
       <PMAppBar big title="Histórico" />
       <div className="pm-screen flex-1 overflow-auto px-4 pb-5 pt-1">
-        {MHISTORY.map((grp, gi) => (
-          <div key={grp.day} className={gi === 0 ? "mt-1.5" : "mt-[18px]"}>
-            <PMSectionLabel>{grp.day}</PMSectionLabel>
-            <PMCard>
-              {grp.items.map((it, i) => (
-                <Item
-                  key={`${it.name}-${it.time}`}
-                  it={it}
-                  isLast={i === grp.items.length - 1}
-                />
-              ))}
-            </PMCard>
+        {isLoading ? (
+          <div className="text-muted-foreground mt-10 text-center text-[13px]">
+            Carregando…
           </div>
-        ))}
+        ) : groups.length === 0 ? (
+          <EmptyHistory />
+        ) : (
+          groups.map((grp, gi) => (
+            <div key={grp.day} className={gi === 0 ? "mt-1.5" : "mt-[18px]"}>
+              <PMSectionLabel>{grp.day}</PMSectionLabel>
+              <PMCard>
+                {grp.items.map((it, i) => (
+                  <Item
+                    key={`${it.name}-${it.time}`}
+                    it={it}
+                    isLast={i === grp.items.length - 1}
+                  />
+                ))}
+              </PMCard>
+            </div>
+          ))
+        )}
       </div>
     </>
+  );
+}
+
+function EmptyHistory() {
+  return (
+    <div className="flex flex-col items-center justify-center px-8 pt-24 text-center">
+      <div
+        className="text-muted-foreground bg-card border-border flex size-16 items-center justify-center rounded-2xl border"
+        style={{ boxShadow: "0 6px 18px rgba(0,0,0,0.18)" }}
+      >
+        <svg
+          width="28"
+          height="28"
+          viewBox="0 0 16 16"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M8 4.5v3.5l2.4 1.4" />
+          <circle cx="8" cy="8" r="6" />
+        </svg>
+      </div>
+      <div className="text-foreground mt-4 text-[15px] font-bold">
+        Nenhuma transferência ainda
+      </div>
+      <div className="text-muted-foreground mt-1 max-w-[260px] text-[13px] leading-[1.5]">
+        Os arquivos que você enviar ou receber vão aparecer aqui.
+      </div>
+    </div>
   );
 }

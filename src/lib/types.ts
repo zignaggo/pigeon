@@ -7,6 +7,19 @@ export type DiscoveredPeer = {
   platform: string;
 };
 
+export type HistoryDirection = "out" | "in";
+
+export type HistoryItem = {
+  dir: HistoryDirection;
+  name: string;
+  ext: string;
+  peer: string;
+  time: string;
+  size: string;
+};
+
+export type HistoryGroup = { day: string; items: HistoryItem[] };
+
 export type LogEntry = { id: number; ts: string; text: string };
 export type Progress = { sent: number; total: number };
 
