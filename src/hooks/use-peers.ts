@@ -3,6 +3,7 @@ import { useEffect, useSyncExternalStore } from "react";
 
 import { startDiscovery, stopDiscovery } from "@/lib/api";
 import { getDeviceId } from "@/lib/device-id";
+import { getDiscoveryMode, getThreshold } from "@/lib/discovery-config";
 import { addLog } from "@/lib/log-store";
 import { getNick } from "@/lib/nick";
 import { getPeers, setPeers, subscribe } from "@/lib/peers-store";
@@ -12,28 +13,27 @@ export function useDiscovery(): void {
   useEffect(() => {
     const nick = getNick() ?? "";
     const deviceId = getDeviceId();
-    addLog("info", "discovery", `start nick=${nick} id=${deviceId.slice(0, 8)}`);
+    const mode = getDiscoveryMode();
+    addLog("info", "discovery", `start modo=${mode} nick=${nick}`);
 
     const unlisten = listen<{ peers: DiscoveredPeer[] }>("peers", (event) => {
       setPeers(event.payload.peers);
       addLog("event", "discovery", `peers: ${event.payload.peers.length}`);
     });
 
-    void startDiscovery(nick, deviceId).catch((e) =>
+    void startDiscovery(nick, deviceId, mode, getThreshold()).catch((e) =>
       addLog("error", "discovery", `start falhou: ${String(e)}`),
     );
 
     return () => {
       void unlisten.then((stop) => stop());
-      void stopDiscovery().catch(() => {});
-      setPeers([]);
-      addLog("info", "discovery", "stop");
     };
   }, []);
 }
 
 export async function restartDiscovery(): Promise<void> {
-  addLog("info", "discovery", "restart");
+  const mode = getDiscoveryMode();
+  addLog("info", "discovery", `restart modo=${mode}`);
   setPeers([]);
   try {
     await stopDiscovery();
@@ -41,7 +41,7 @@ export async function restartDiscovery(): Promise<void> {
     addLog("warn", "discovery", `stop: ${String(e)}`);
   }
   try {
-    await startDiscovery(getNick() ?? "", getDeviceId());
+    await startDiscovery(getNick() ?? "", getDeviceId(), mode, getThreshold());
   } catch (e) {
     addLog("error", "discovery", `restart falhou: ${String(e)}`);
   }

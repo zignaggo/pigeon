@@ -51,6 +51,11 @@ struct PeersSnapshot {
     peers: Vec<Peer>,
 }
 
+#[derive(Clone, Serialize)]
+struct DiscoveryLog {
+    message: String,
+}
+
 #[derive(Default)]
 pub struct DiscoveryState {
     inner: Mutex<Inner>,
@@ -73,6 +78,12 @@ impl DiscoveryState {
     }
 }
 
+fn dlog(app: &AppHandle, message: impl Into<String>) {
+    let message = message.into();
+    log::info!("[discovery] {message}");
+    let _ = app.emit("discovery-log", DiscoveryLog { message });
+}
+
 pub async fn start(
     app: AppHandle,
     state: Arc<DiscoveryState>,
@@ -83,6 +94,10 @@ pub async fn start(
         let mut inner = state.inner.lock().await;
         if inner.running {
             inner.nick = nick;
+            let snapshot = snapshot(&inner);
+            drop(inner);
+            dlog(&app, "start: já rodando, reenviando snapshot");
+            let _ = app.emit("peers", snapshot);
             return Ok(());
         }
         inner.running = true;
@@ -93,32 +108,64 @@ pub async fn start(
 
     #[cfg(target_os = "android")]
     {
-        match acquire_multicast_lock() {
-            Ok(lock) => state.inner.lock().await.multicast_lock = Some(lock),
-            Err(e) => log::warn!("multicast lock failed: {e}"),
-        }
+        let state = state.clone();
+        let app = app.clone();
+        tokio::spawn(async move {
+            let res = tokio::time::timeout(
+                Duration::from_secs(5),
+                tokio::task::spawn_blocking(acquire_multicast_lock),
+            )
+            .await;
+            match res {
+                Ok(Ok(Ok(lock))) => {
+                    state.inner.lock().await.multicast_lock = Some(lock);
+                    dlog(&app, "MulticastLock adquirido");
+                }
+                Ok(Ok(Err(e))) => dlog(&app, format!("MulticastLock falhou: {e}")),
+                Ok(Err(_)) => dlog(&app, "MulticastLock panic ao adquirir"),
+                Err(_) => dlog(&app, "MulticastLock timeout"),
+            }
+        });
     }
 
-    let socket = match bind_multicast() {
-        Ok(s) => Arc::new(s),
+    let (socket, joined) = match setup_socket() {
+        Ok(s) => (Arc::new(s.0), s.1),
         Err(e) => {
-            let mut inner = state.inner.lock().await;
-            inner.running = false;
+            state.inner.lock().await.running = false;
+            dlog(&app, format!("bind falhou: {e}"));
             return Err(format!("bind multicast: {e}"));
         }
     };
 
-    let dest = SocketAddrV4::new(GROUP, DISCOVERY_PORT);
+    dlog(&app, format!("bind 0.0.0.0:{DISCOVERY_PORT} ok"));
+    dlog(&app, format!("interfaces locais: {:?}", interface_ipv4s()));
+    dlog(&app, format!("multicast {GROUP} join em {} iface(s)", joined.len()));
+    dlog(&app, format!("meu ip: {}", local_ipv4()));
+
+    let dests = announce_targets();
+    dlog(&app, format!("destinos de anúncio: {dests:?}"));
 
     let broadcaster = {
         let socket = socket.clone();
         let state = state.clone();
+        let app = app.clone();
         tokio::spawn(async move {
+            let mut first = true;
             loop {
                 let ann = build_announcement(&state, "hello").await;
                 if let Ok(bytes) = serde_json::to_vec(&ann) {
-                    if let Err(e) = socket.send_to(&bytes, dest).await {
-                        log::warn!("announce send failed: {e}");
+                    let mut report = Vec::new();
+                    for dest in &dests {
+                        let res = socket.send_to(&bytes, *dest).await;
+                        if first {
+                            report.push(format!("{dest}={}", result_label(&res)));
+                        } else if let Err(e) = res {
+                            dlog(&app, format!("envio {dest} erro: {e}"));
+                        }
+                    }
+                    if first {
+                        dlog(&app, format!("hello enviado · {}", report.join(" ")));
+                        first = false;
                     }
                 }
                 tokio::time::sleep(INTERVAL).await;
@@ -132,23 +179,46 @@ pub async fn start(
         let app = app.clone();
         tokio::spawn(async move {
             let mut buf = vec![0u8; 2048];
+            let mut loopback_seen = false;
             loop {
                 match socket.recv_from(&mut buf).await {
-                    Ok((n, _src)) => {
-                        let Ok(ann) = serde_json::from_slice::<Announcement>(&buf[..n]) else {
+                    Ok((n, src)) => {
+                        let parsed = serde_json::from_slice::<Announcement>(&buf[..n]);
+                        let Ok(ann) = parsed else {
+                            dlog(&app, format!("recv {n}B de {src}: json inválido"));
                             continue;
                         };
                         if ann.magic != MAGIC {
+                            dlog(&app, format!("recv {n}B de {src}: magic inválido"));
                             continue;
                         }
                         let mut inner = state.inner.lock().await;
                         if ann.id == inner.id {
+                            drop(inner);
+                            if !loopback_seen {
+                                loopback_seen = true;
+                                dlog(&app, "loopback ok (recebo meus próprios pacotes)");
+                            }
                             continue;
                         }
+                        let short = ann.id.chars().take(8).collect::<String>();
                         let changed = if ann.kind == "bye" {
-                            inner.peers.remove(&ann.id).is_some()
+                            let removed = inner.peers.remove(&ann.id).is_some();
+                            if removed {
+                                dlog(&app, format!("bye de {} (#{short})", ann.nick));
+                            }
+                            removed
                         } else {
                             let known = inner.peers.contains_key(&ann.id);
+                            if !known {
+                                dlog(
+                                    &app,
+                                    format!(
+                                        "peer encontrado: {} (#{short}) {} {}",
+                                        ann.nick, ann.platform, ann.ip
+                                    ),
+                                );
+                            }
                             inner.peers.insert(
                                 ann.id.clone(),
                                 PeerEntry {
@@ -165,7 +235,7 @@ pub async fn start(
                         }
                     }
                     Err(e) => {
-                        log::warn!("discovery recv failed: {e}");
+                        dlog(&app, format!("recv erro: {e}"));
                         tokio::time::sleep(Duration::from_millis(200)).await;
                     }
                 }
@@ -185,9 +255,11 @@ pub async fn start(
                 inner
                     .peers
                     .retain(|_, entry| now.duration_since(entry.last_seen) < PEER_TTL);
-                if inner.peers.len() != before {
+                let after = inner.peers.len();
+                if after != before {
                     let snapshot = snapshot(&inner);
                     drop(inner);
+                    dlog(&app, format!("peer(s) expirado(s): {before} → {after}"));
                     let _ = app.emit("peers", snapshot);
                 }
             }
@@ -206,7 +278,7 @@ pub async fn stop(state: Arc<DiscoveryState>) -> Result<(), String> {
         }
     }
 
-    send_bye(&state).await;
+    let _ = tokio::time::timeout(Duration::from_secs(2), send_bye(&state)).await;
 
     let mut inner = state.inner.lock().await;
     for task in inner.tasks.drain(..) {
@@ -217,7 +289,7 @@ pub async fn stop(state: Arc<DiscoveryState>) -> Result<(), String> {
 
     #[cfg(target_os = "android")]
     if let Some(lock) = inner.multicast_lock.take() {
-        release_multicast_lock(&lock);
+        tokio::task::spawn_blocking(move || release_multicast_lock(&lock));
     }
 
     Ok(())
@@ -225,6 +297,28 @@ pub async fn stop(state: Arc<DiscoveryState>) -> Result<(), String> {
 
 pub async fn set_nick(state: Arc<DiscoveryState>, nick: String) {
     state.inner.lock().await.nick = nick;
+}
+
+fn announce_targets() -> Vec<SocketAddrV4> {
+    let mut targets = vec![
+        SocketAddrV4::new(GROUP, DISCOVERY_PORT),
+        SocketAddrV4::new(Ipv4Addr::BROADCAST, DISCOVERY_PORT),
+    ];
+    for ip in interface_ipv4s() {
+        let o = ip.octets();
+        let addr = SocketAddrV4::new(Ipv4Addr::new(o[0], o[1], o[2], 255), DISCOVERY_PORT);
+        if !targets.contains(&addr) {
+            targets.push(addr);
+        }
+    }
+    targets
+}
+
+fn result_label(res: &std::io::Result<usize>) -> String {
+    match res {
+        Ok(n) => format!("ok({n}B)"),
+        Err(e) => format!("erro({e})"),
+    }
 }
 
 fn snapshot(inner: &Inner) -> PeersSnapshot {
@@ -264,36 +358,46 @@ async fn send_bye(state: &DiscoveryState) {
         return;
     };
     if let Ok(socket) = UdpSocket::bind((Ipv4Addr::UNSPECIFIED, 0)).await {
+        let _ = socket.set_broadcast(true);
         let _ = socket
             .send_to(&bytes, SocketAddrV4::new(GROUP, DISCOVERY_PORT))
+            .await;
+        let _ = socket
+            .send_to(&bytes, SocketAddrV4::new(Ipv4Addr::BROADCAST, DISCOVERY_PORT))
             .await;
     }
 }
 
-fn bind_multicast() -> std::io::Result<UdpSocket> {
+fn setup_socket() -> std::io::Result<(UdpSocket, Vec<Ipv4Addr>)> {
     let socket = Socket::new(Domain::IPV4, Type::DGRAM, Some(Protocol::UDP))?;
     socket.set_reuse_address(true)?;
     #[cfg(all(unix, not(target_os = "android")))]
     socket.set_reuse_port(true)?;
+    socket.set_broadcast(true)?;
 
     let bind_addr: SocketAddr = SocketAddrV4::new(Ipv4Addr::UNSPECIFIED, DISCOVERY_PORT).into();
     socket.bind(&bind_addr.into())?;
     socket.set_multicast_loop_v4(true)?;
     socket.set_multicast_ttl_v4(1)?;
-    socket.set_nonblocking(true)?;
 
-    let mut joined = false;
-    for ip in interface_ipv4s() {
-        if socket.join_multicast_v4(&GROUP, &ip).is_ok() {
-            joined = true;
+    let ifaces = interface_ipv4s();
+    let mut joined = Vec::new();
+    for ip in &ifaces {
+        if socket.join_multicast_v4(&GROUP, ip).is_ok() {
+            joined.push(*ip);
         }
     }
-    if !joined {
-        socket.join_multicast_v4(&GROUP, &Ipv4Addr::UNSPECIFIED)?;
+    if joined.is_empty() {
+        let _ = socket.join_multicast_v4(&GROUP, &Ipv4Addr::UNSPECIFIED);
     }
 
+    if let Some(egress) = local_ip_v4_addr().or_else(|| ifaces.first().copied()) {
+        let _ = socket.set_multicast_if_v4(&egress);
+    }
+
+    socket.set_nonblocking(true)?;
     let std_socket: StdUdpSocket = socket.into();
-    UdpSocket::from_std(std_socket)
+    Ok((UdpSocket::from_std(std_socket)?, joined))
 }
 
 fn interface_ipv4s() -> Vec<Ipv4Addr> {
@@ -308,6 +412,13 @@ fn interface_ipv4s() -> Vec<Ipv4Addr> {
         }
     }
     out
+}
+
+fn local_ip_v4_addr() -> Option<Ipv4Addr> {
+    match local_ip_address::local_ip() {
+        Ok(std::net::IpAddr::V4(v4)) => Some(v4),
+        _ => None,
+    }
 }
 
 fn local_ipv4() -> String {

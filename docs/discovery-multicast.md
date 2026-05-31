@@ -124,6 +124,22 @@ Mais tarde, o toggle "Visível na rede" dos Ajustes controla isso.
   canal sem criptografia desta versão; aprovação de conexão fica para depois.
 - Escopo só IPv4 por enquanto.
 
+## Segunda estratégia: varredura (unicast scan)
+
+Implementação alternativa em `src-tauri/src/scan.rs`, selecionável nos Ajustes
+(segmento **Multicast | Varredura** + **Limite de IPs**, default 30). Em vez de
+multicast/broadcast, faz **varredura ativa**: deriva o range do /24 a partir do
+IP local e envia o mesmo payload via **unicast** para os primeiros N hosts
+(`.1..=.N`, N = limite). Ao receber um `hello` de um peer novo, responde direto
+(unicast) — assim a descoberta é mútua mesmo com limites assimétricos. Mesmo
+wire format, mesma porta (UDP 7879), mesmos eventos (`peers` / `discovery-log`).
+
+Trade-offs: não depende de multicast/MulticastLock (mais robusto em Wi-Fi que
+filtra multicast), mas só cobre os N primeiros IPs do /24 e assume máscara /24
+(detecção de máscara/gateway via crate fica para depois). Comandos: o
+`start_discovery(nick, device_id, mode, threshold)` despacha para `discovery` ou
+`scan` conforme o `mode`; `stop_discovery` para os dois.
+
 ## Ordem de implementação
 
 Mobile primeiro. O núcleo é compartilhado; a diferença é onde validamos.

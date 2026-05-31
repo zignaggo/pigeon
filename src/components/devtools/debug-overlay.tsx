@@ -72,7 +72,10 @@ function DebugPanel({ onClose }: { onClose: () => void }) {
   const rescan = async () => {
     setRescanning(true);
     try {
-      await restartDiscovery();
+      await Promise.race([
+        restartDiscovery(),
+        new Promise((resolve) => setTimeout(resolve, 8000)),
+      ]);
     } finally {
       setRescanning(false);
     }

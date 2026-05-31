@@ -9,8 +9,16 @@ import {
   PMCard,
   PMToggle,
 } from "@/components/pigeon/mobile";
+import { restartDiscovery } from "@/hooks/use-peers";
 import { setNick as setNickBackend } from "@/lib/api";
 import { getDeviceId } from "@/lib/device-id";
+import {
+  type DiscoveryMode,
+  getDiscoveryMode,
+  getThreshold,
+  setDiscoveryMode,
+  setThreshold,
+} from "@/lib/discovery-config";
 import { getNick, setNick as persistNick } from "@/lib/nick";
 import { cn, initialsOf } from "@/lib/utils";
 
@@ -95,6 +103,23 @@ function SettingsScreen() {
     setEditing(false);
   };
 
+  const [mode, setMode] = useState<DiscoveryMode>(getDiscoveryMode);
+  const [threshold, setTh] = useState(getThreshold);
+
+  const changeMode = (next: DiscoveryMode) => {
+    if (next === mode) return;
+    setDiscoveryMode(next);
+    setMode(next);
+    void restartDiscovery();
+  };
+
+  const changeThreshold = (next: number) => {
+    const clamped = Math.max(10, Math.min(254, next));
+    setThreshold(clamped);
+    setTh(clamped);
+    void restartDiscovery();
+  };
+
   return (
     <>
       <PMAppBar big title="Ajustes" />
@@ -159,6 +184,67 @@ function SettingsScreen() {
               </button>
             )}
           </div>
+        </PMCard>
+
+        <div className="mt-[18px]" />
+        <PMSectionLabel>Descoberta</PMSectionLabel>
+        <PMCard>
+          <div className="flex gap-1.5 p-1.5">
+            {(["multicast", "scan"] as DiscoveryMode[]).map((m) => {
+              const on = mode === m;
+              return (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => changeMode(m)}
+                  className={cn(
+                    "flex-1 rounded-[12px] py-2 text-[13px] font-semibold transition-colors",
+                    on
+                      ? "bg-primary text-white"
+                      : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  {m === "multicast" ? "Multicast" : "Varredura"}
+                </button>
+              );
+            })}
+          </div>
+          {mode === "scan" && (
+            <div className="border-border flex items-center gap-4 border-t px-[15px] py-3.5">
+              <div className="min-w-0 flex-1">
+                <div className="text-foreground text-[14.5px] font-semibold">
+                  Limite de IPs
+                </div>
+                <div className="text-muted-foreground mt-0.5 text-xs">
+                  Quantos endereços do range escanear
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  aria-label="Diminuir limite"
+                  onClick={() => changeThreshold(threshold - 10)}
+                  className="border-border bg-card text-foreground flex size-8 items-center justify-center rounded-[10px] border text-lg font-bold"
+                >
+                  −
+                </button>
+                <span
+                  className="text-foreground w-8 text-center text-[15px] font-bold"
+                  style={{ fontFamily: MONO }}
+                >
+                  {threshold}
+                </span>
+                <button
+                  type="button"
+                  aria-label="Aumentar limite"
+                  onClick={() => changeThreshold(threshold + 10)}
+                  className="border-border bg-card text-foreground flex size-8 items-center justify-center rounded-[10px] border text-lg font-bold"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+          )}
         </PMCard>
 
         <div className="mt-[18px]" />

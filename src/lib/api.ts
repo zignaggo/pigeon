@@ -15,8 +15,12 @@ export const stopServer = () => invoke<void>("stop_server");
 export const sendFile = (targetIp: string, filePath: string) =>
   invoke<void>("send_file", { targetIp, filePath });
 
-export const startDiscovery = (nick: string, deviceId: string) =>
-  invoke<void>("start_discovery", { nick, deviceId });
+export const startDiscovery = (
+  nick: string,
+  deviceId: string,
+  mode: string,
+  threshold: number,
+) => invoke<void>("start_discovery", { nick, deviceId, mode, threshold });
 
 export const stopDiscovery = () => invoke<void>("stop_discovery");
 

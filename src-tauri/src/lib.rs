@@ -1,10 +1,12 @@
 mod client;
 mod discovery;
+mod scan;
 mod server;
 
 use std::sync::Arc;
 
 use discovery::DiscoveryState;
+use scan::ScanState;
 use server::ServerState;
 use tauri::{AppHandle, Manager, State};
 
@@ -14,6 +16,7 @@ use tauri_plugin_android_fs::{AndroidFsExt, FileUri};
 struct AppState {
     server: Arc<ServerState>,
     discovery: Arc<DiscoveryState>,
+    scan: Arc<ScanState>,
 }
 
 #[tauri::command]
@@ -64,18 +67,29 @@ async fn start_discovery(
     state: State<'_, AppState>,
     nick: String,
     device_id: String,
+    mode: String,
+    threshold: Option<u32>,
 ) -> Result<(), String> {
-    discovery::start(app, state.discovery.clone(), nick, device_id).await
+    let threshold = threshold.unwrap_or(scan::DEFAULT_THRESHOLD);
+    if mode == "scan" {
+        let _ = discovery::stop(state.discovery.clone()).await;
+        scan::start(app, state.scan.clone(), nick, device_id, threshold).await
+    } else {
+        let _ = scan::stop(state.scan.clone()).await;
+        discovery::start(app, state.discovery.clone(), nick, device_id).await
+    }
 }
 
 #[tauri::command]
 async fn stop_discovery(state: State<'_, AppState>) -> Result<(), String> {
+    let _ = scan::stop(state.scan.clone()).await;
     discovery::stop(state.discovery.clone()).await
 }
 
 #[tauri::command]
 async fn set_nick(state: State<'_, AppState>, nick: String) -> Result<(), String> {
-    discovery::set_nick(state.discovery.clone(), nick).await;
+    discovery::set_nick(state.discovery.clone(), nick.clone()).await;
+    scan::set_nick(state.scan.clone(), nick).await;
     Ok(())
 }
 
@@ -177,6 +191,7 @@ pub fn run() {
             app.manage(AppState {
                 server: Arc::new(ServerState::new()),
                 discovery: Arc::new(DiscoveryState::new()),
+                scan: Arc::new(ScanState::new()),
             });
             Ok(())
         })

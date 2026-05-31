@@ -144,8 +144,12 @@ Os arquivos chegam primeiro no cache do app (gravável via `tokio::fs`) e depois
 
 ### 5. Firewall do Windows
 
-Na primeira execução o firewall pede permissão para a porta 7878. Aceite "Redes privadas". Se precisar, rode como admin:
-`netsh advfirewall firewall add rule name="Pigeon" dir=in action=allow protocol=TCP localport=7878`.
+Na primeira execução o firewall pede permissão para a porta 7878. Aceite "Redes privadas". **A descoberta precisa também do UDP 7879 de entrada** — o firewall costuma bloqueá-lo silenciosamente (o dispositivo recebe os próprios pacotes via loopback, mas não os dos outros). Libere as duas portas, como admin:
+
+```
+netsh advfirewall firewall add rule name="Pigeon TCP" dir=in action=allow protocol=TCP localport=7878
+netsh advfirewall firewall add rule name="Pigeon UDP" dir=in action=allow protocol=UDP localport=7879
+```
 
 ### 6. Mesma sub-rede
 

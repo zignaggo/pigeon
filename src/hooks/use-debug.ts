@@ -23,6 +23,9 @@ export function useDebugSetup(): void {
       listen<{ message: string }>("error", (e) =>
         addLog("error", "backend", e.payload.message),
       ),
+      listen<{ message: string }>("discovery-log", (e) =>
+        addLog("event", "net", e.payload.message),
+      ),
     ];
     return () => {
       for (const sub of subs) void sub.then((un) => un());
