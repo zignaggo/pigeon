@@ -15,7 +15,11 @@
     "dev:android": "bun run --env-file=.env tauri android dev",
     "build:desktop": "bun run --env-file=.env tauri build",
     "build:android": "bun run --env-file=.env tauri android build",
-    "doctor": "npx react-doctor@latest"
+    "doctor": "npx react-doctor@latest",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.18",
@@ -48,6 +52,8 @@
     "@types/react-dom": "^19.2.0",
     "@vitejs/plugin-react": "^6.0.1",
     "jsdom": "^28.1.0",
+    "oxfmt": "^0.52.0",
+    "oxlint": "^1.67.0",
     "react-doctor": "^0.2.14",
     "typescript": "^6.0.2",
     "vite": "^8.0.0",

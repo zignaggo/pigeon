@@ -5,8 +5,9 @@ import {
   useNavigate,
   useLocation,
 } from "@tanstack/react-router";
-import { getNick } from "@/lib/nick";
+
 import { PMTabBar, type Tab } from "@/components/pigeon/mobile";
+import { getNick } from "@/lib/nick";
 
 const TAB_PATH = {
   rede: "/rede",
@@ -35,7 +36,7 @@ function FrameLayout() {
       className="bg-background text-foreground flex min-h-screen justify-center"
       style={{ fontFamily: "Nunito, system-ui, sans-serif" }}
     >
-      <div className="border-border relative flex h-screen w-full max-w-[440px] flex-col overflow-hidden border-x">
+      <div className="border-border relative flex h-screen w-full max-w-110 flex-col overflow-hidden border-x">
         <div
           key={active}
           className="flex min-h-0 flex-1 flex-col"

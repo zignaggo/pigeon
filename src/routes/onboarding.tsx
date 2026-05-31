@@ -1,8 +1,14 @@
-import { useEffect, useRef, useState } from "react";
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
-import { initialsOf } from "@/lib/utils";
+import { useEffect, useRef, useState } from "react";
+
+import {
+  PigeonLogo,
+  PigeonAvatar,
+  DeviceGlyph,
+  StatusDot,
+} from "@/components/pigeon/atoms";
 import { getNick, setNick } from "@/lib/nick";
-import { PigeonLogo, PigeonAvatar, DeviceGlyph, StatusDot } from "@/components/pigeon/atoms";
+import { initialsOf } from "@/lib/utils";
 
 const MONO = '"Geist Mono", ui-monospace, monospace';
 
@@ -83,12 +89,19 @@ function OnboardingScreen() {
           </div>
 
           {/* input */}
-          <label htmlFor="nick" className="text-muted-foreground pl-1 text-xs font-bold uppercase tracking-[0.6px]">
+          <label
+            htmlFor="nick"
+            className="text-muted-foreground pl-1 text-xs font-bold uppercase tracking-[0.6px]"
+          >
             Como quer ser chamado?
           </label>
           <div
             className="bg-card mt-2 flex items-center gap-2.5 rounded-2xl border-[1.5px] pl-4 pr-1.5 transition-colors"
-            style={{ paddingTop: 4, paddingBottom: 4, borderColor: draft ? "var(--primary)" : "var(--border)" }}
+            style={{
+              paddingTop: 4,
+              paddingBottom: 4,
+              borderColor: draft ? "var(--primary)" : "var(--border)",
+            }}
           >
             <input
               ref={ref}
@@ -103,7 +116,10 @@ function OnboardingScreen() {
               className="text-foreground placeholder:text-muted-foreground min-w-0 flex-1 border-none bg-transparent text-[17px] font-semibold outline-none"
               style={{ fontFamily: "inherit" }}
             />
-            <span className="text-muted-foreground pr-1.5 text-xs" style={{ fontFamily: MONO }}>
+            <span
+              className="text-muted-foreground pr-1.5 text-xs"
+              style={{ fontFamily: MONO }}
+            >
               {draft.length}/20
             </span>
           </div>
@@ -132,7 +148,10 @@ function OnboardingScreen() {
             }
             style={
               ok
-                ? { boxShadow: "0 10px 24px color-mix(in oklab, var(--primary) 40%, transparent)" }
+                ? {
+                    boxShadow:
+                      "0 10px 24px color-mix(in oklab, var(--primary) 40%, transparent)",
+                  }
                 : undefined
             }
           >

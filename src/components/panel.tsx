@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+
 import { cn } from "../lib/utils";
 
 type Props = {
@@ -18,9 +19,7 @@ export function Panel({ icon, title, children, className }: Props) {
     >
       <div className="mb-0.5 flex items-center gap-2">
         {icon && <span className="text-base">{icon}</span>}
-        <h2 className="text-foreground m-0 text-base font-bold">
-          {title}
-        </h2>
+        <h2 className="text-foreground m-0 text-base font-bold">{title}</h2>
       </div>
       {children}
     </section>

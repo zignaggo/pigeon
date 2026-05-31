@@ -1,3 +1,15 @@
 {
   "read_only_files": ["**/routeTree.gen.ts"],
+  "language_servers": [
+    "!biome",
+    "oxlint",
+    "oxfmt",
+    "tailwindcss-language-server",
+    "json-language-server",
+    "!typescript-language-server",
+    "vscode-html-language-server",
+    "vscode-css-language-server",
+    "live-server",
+    "vtsls"
+  ]
 }

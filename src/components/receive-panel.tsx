@@ -1,12 +1,12 @@
-import { Panel, FieldLabel } from './panel'
-import { Button } from './ui/button'
-import { Input } from './ui/input'
-import { Switch } from './ui/switch'
-import { cn } from '../lib/utils'
-import { isMobile } from '../lib/platform'
-import { usePigeon } from '../context/pigeon-context'
+import { usePigeon } from "../context/pigeon-context";
+import { isMobile } from "../lib/platform";
+import { cn } from "../lib/utils";
+import { Panel, FieldLabel } from "./panel";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { Switch } from "./ui/switch";
 
-const mobile = isMobile()
+const mobile = isMobile();
 
 export function ReceivePanel() {
   const {
@@ -17,7 +17,7 @@ export function ReceivePanel() {
     pickDir,
     pickSafDir,
     toggleServer,
-  } = usePigeon()
+  } = usePigeon();
 
   return (
     <Panel
@@ -29,7 +29,7 @@ export function ReceivePanel() {
         <>
           <div className="flex items-center gap-2">
             <div className="border-border bg-background text-foreground flex-1 truncate rounded-[10px] border px-3 py-2.5 text-sm">
-              {safDirName ?? 'Nenhuma pasta escolhida'}
+              {safDirName ?? "Nenhuma pasta escolhida"}
             </div>
             <Button variant="ghost" onClick={pickSafDir}>
               Escolher pasta…
@@ -59,18 +59,18 @@ export function ReceivePanel() {
         <div className="flex items-center gap-2.5">
           <span
             className={cn(
-              'h-2.5 w-2.5 rounded-full transition-colors duration-300',
+              "h-2.5 w-2.5 rounded-full transition-colors duration-300",
               serverRunning
-                ? 'bg-chart-3 ring-chart-3/25 animate-pulse ring-[3px]'
-                : 'bg-muted-foreground opacity-50',
+                ? "bg-chart-3 ring-chart-3/25 animate-pulse ring-[3px]"
+                : "bg-muted-foreground opacity-50",
             )}
           />
           <span className="text-foreground text-sm font-semibold">
-            {serverRunning ? 'Servidor ativo · porta 7878' : 'Servidor parado'}
+            {serverRunning ? "Servidor ativo · porta 7878" : "Servidor parado"}
           </span>
         </div>
         <Switch checked={serverRunning} onChange={toggleServer} />
       </div>
     </Panel>
-  )
+  );
 }

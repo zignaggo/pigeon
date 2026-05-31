@@ -1,14 +1,16 @@
-import { usePigeon } from '../context/pigeon-context'
+import { usePigeon } from "../context/pigeon-context";
 
 export function StatusLog() {
-  const { logs } = usePigeon()
+  const { logs } = usePigeon();
 
   return (
     <section>
       <span className="island-kicker">Status</span>
       <div className="border-border bg-card mt-1.5 flex max-h-[180px] flex-col gap-1.5 overflow-y-auto rounded-xl border px-3 py-2.5 font-mono text-xs">
         {logs.length === 0 ? (
-          <p className="text-muted-foreground m-0 opacity-70">nenhum evento ainda</p>
+          <p className="text-muted-foreground m-0 opacity-70">
+            nenhum evento ainda
+          </p>
         ) : (
           logs.map((l) => (
             <div
@@ -22,5 +24,5 @@ export function StatusLog() {
         )}
       </div>
     </section>
-  )
+  );
 }

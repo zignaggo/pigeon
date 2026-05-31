@@ -1,8 +1,8 @@
+import { usePigeon } from "../context/pigeon-context";
+import { fileNameOf, formatBytes } from "../lib/format";
 import { Panel, FieldLabel } from "./panel";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-import { fileNameOf, formatBytes } from "../lib/format";
-import { usePigeon } from "../context/pigeon-context";
 
 export function SendPanel() {
   const {

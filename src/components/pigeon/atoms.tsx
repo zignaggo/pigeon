@@ -4,7 +4,13 @@
 import { cn } from "../../lib/utils";
 
 // Brand mark — coral rounded square with the paper-plane (dove) glyph.
-export function PigeonLogo({ size = 44, radius }: { size?: number; radius?: number }) {
+export function PigeonLogo({
+  size = 44,
+  radius,
+}: {
+  size?: number;
+  radius?: number;
+}) {
   const r = radius != null ? radius : size * 0.3;
   return (
     <div
@@ -13,7 +19,8 @@ export function PigeonLogo({ size = 44, radius }: { size?: number; radius?: numb
         width: size,
         height: size,
         borderRadius: r,
-        boxShadow: "0 8px 22px color-mix(in oklab, var(--primary) 38%, transparent)",
+        boxShadow:
+          "0 8px 22px color-mix(in oklab, var(--primary) 38%, transparent)",
       }}
     >
       <svg
@@ -71,7 +78,14 @@ export function PigeonAvatar({
         !tint && "bg-accent text-primary",
         className,
       )}
-      style={{ width: size, height: size, borderRadius, fontSize: size * 0.36, letterSpacing: -0.5, ...tintStyle }}
+      style={{
+        width: size,
+        height: size,
+        borderRadius,
+        fontSize: size * 0.36,
+        letterSpacing: -0.5,
+        ...tintStyle,
+      }}
     >
       {name}
     </div>
@@ -91,7 +105,13 @@ const EXT_VAR: Record<string, string> = {
 };
 
 // File "tag" icon with the extension printed in mono.
-export function FileIcon({ ext = "pdf", size = 34 }: { ext?: string; size?: number }) {
+export function FileIcon({
+  ext = "pdf",
+  size = 34,
+}: {
+  ext?: string;
+  size?: number;
+}) {
   const v = EXT_VAR[ext] || "--muted-foreground";
   return (
     <div
@@ -110,7 +130,14 @@ export function FileIcon({ ext = "pdf", size = 34 }: { ext?: string; size?: numb
     >
       <span
         className="absolute"
-        style={{ top: 4, left: 5, width: 8, height: 3, borderRadius: 2, background: "color-mix(in oklab, var(--foreground) 30%, transparent)" }}
+        style={{
+          top: 4,
+          left: 5,
+          width: 8,
+          height: 3,
+          borderRadius: 2,
+          background: "color-mix(in oklab, var(--foreground) 30%, transparent)",
+        }}
       />
       {ext.toUpperCase()}
     </div>
@@ -120,7 +147,13 @@ export function FileIcon({ ext = "pdf", size = 34 }: { ext?: string; size?: numb
 type DeviceKind = "laptop" | "phone" | "tablet" | "desktop";
 
 // Stroke uses currentColor — set the color on a parent via a text-* class.
-export function DeviceGlyph({ kind = "laptop", size = 18 }: { kind?: DeviceKind; size?: number }) {
+export function DeviceGlyph({
+  kind = "laptop",
+  size = 18,
+}: {
+  kind?: DeviceKind;
+  size?: number;
+}) {
   const common = {
     width: size,
     height: size,
