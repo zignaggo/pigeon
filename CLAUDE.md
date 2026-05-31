@@ -15,6 +15,8 @@ App de transferência de arquivos na **rede local**, com o **mesmo código** rod
 
 ## Objetivos da primeira versão
 
+> **Foco de implementação: mobile (Android) primeiro, desktop (Windows) em seguida.** Cada feature é construída e validada no Android antes de fechar no desktop.
+
 Esta versão precisa entregar, ponta a ponta:
 
 1. **Descobrir dispositivos na rede** — descoberta automática de peers via UDP multicast. Plano detalhado em [`docs/discovery-multicast.md`](docs/discovery-multicast.md).
@@ -40,7 +42,7 @@ Vão existir no futuro, mas **não** nesta primeira versão:
 - **Tauri 2** (versão estável mais recente)
 - **Frontend:** React + TypeScript, **TanStack Router** (file-based routing em `src/routes/`), Tailwind v4
 - **Backend:** Rust (Tokio)
-- **Build targets:** `x86_64-pc-windows-msvc` e `aarch64-linux-android`
+- **Build targets:** `aarch64-linux-android` (alvo principal) e `x86_64-pc-windows-msvc`
 
 ### Bibliotecas Rust
 

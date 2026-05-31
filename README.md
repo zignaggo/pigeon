@@ -14,7 +14,7 @@ Fora do escopo desta versão: criptografia, resume, múltiplos arquivos por tran
 
 - **Tauri 2** — backend em Rust (Tokio).
 - **Frontend** — React + TypeScript, [TanStack Router](https://tanstack.com/router) (file-based routing, SPA), Tailwind CSS v4.
-- **Targets** — `x86_64-pc-windows-msvc` e `aarch64-linux-android`.
+- **Targets** — `aarch64-linux-android` (foco principal) e `x86_64-pc-windows-msvc`. A implementação é mobile-first: cada feature é validada no Android antes do desktop.
 - **Lint/format** — oxlint + oxfmt (configs em `oxlint.config.ts` / `oxfmt.config.ts`).
 
 ## Pré-requisitos

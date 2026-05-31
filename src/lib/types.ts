@@ -1,3 +1,12 @@
+export type DiscoveredPeer = {
+  id: string;
+  nick: string;
+  ip: string;
+  port: number;
+  mac: string;
+  platform: string;
+};
+
 export type LogEntry = { id: number; ts: string; text: string };
 export type Progress = { sent: number; total: number };
 

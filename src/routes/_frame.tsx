@@ -7,6 +7,7 @@ import {
 } from "@tanstack/react-router";
 
 import { PMTabBar, type Tab } from "@/components/pigeon/mobile";
+import { useDiscovery } from "@/hooks/use-peers";
 import { getNick } from "@/lib/nick";
 
 const TAB_PATH = {
@@ -23,6 +24,7 @@ export const Route = createFileRoute("/_frame")({
 });
 
 function FrameLayout() {
+  useDiscovery();
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const active: Tab = pathname.startsWith("/historico")

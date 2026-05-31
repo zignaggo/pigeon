@@ -11,8 +11,9 @@ import {
   PMPeerRow,
 } from "@/components/pigeon/mobile";
 import { RequestSheet } from "@/components/request-sheet";
-import { PEERS } from "@/lib/mock";
+import { usePeers } from "@/hooks/use-peers";
 import { getNick } from "@/lib/nick";
+import { toUiPeer } from "@/lib/peer-map";
 import { initialsOf } from "@/lib/utils";
 
 const QrIcon = (
@@ -41,7 +42,7 @@ function NetworkScreen() {
   const navigate = useNavigate();
   const me = initialsOf(getNick() ?? "");
   const [sheet, setSheet] = useState(false);
-  const online = PEERS.filter((p) => p.status === "online").length;
+  const peers = usePeers().map(toUiPeer);
 
   return (
     <>
@@ -64,38 +65,51 @@ function NetworkScreen() {
         }
       />
       <div className="pm-screen flex-1 overflow-auto px-4 pb-5 pt-1">
-        <PMRadarHero count={PEERS.length} me={me} />
+        <PMRadarHero count={peers.length} me={me} />
         <div className="mt-1.5">
-          <PMSectionLabel right={`${online} online`}>
+          <PMSectionLabel right={`${peers.length} online`}>
             Dispositivos
           </PMSectionLabel>
-          <PMCard>
-            {PEERS.map((p, i) => (
-              <PMPeerRow
-                key={p.id}
-                peer={p}
-                onTap={(peer) =>
-                  navigate({ to: "/send/$peerId", params: { peerId: peer.id } })
-                }
-                isLast={i === PEERS.length - 1}
-              />
-            ))}
-          </PMCard>
+          {peers.length === 0 ? (
+            <PMCard>
+              <div className="text-muted-foreground px-[15px] py-6 text-center text-[13px]">
+                Procurando dispositivos na rede…
+              </div>
+            </PMCard>
+          ) : (
+            <PMCard>
+              {peers.map((p, i) => (
+                <PMPeerRow
+                  key={p.id}
+                  peer={p}
+                  onTap={(peer) =>
+                    navigate({
+                      to: "/send/$peerId",
+                      params: { peerId: peer.id },
+                    })
+                  }
+                  isLast={i === peers.length - 1}
+                />
+              ))}
+            </PMCard>
+          )}
         </div>
-        <div className="text-muted-foreground mt-3.5 flex items-center justify-center gap-2 text-[12.5px]">
-          <svg
-            width="15"
-            height="15"
-            viewBox="0 0 14 14"
-            fill="none"
-            stroke="var(--primary)"
-            strokeWidth="1.8"
-            strokeLinecap="round"
-          >
-            <path d="M2 7l3 3 7-7" />
-          </svg>
-          Toque num dispositivo para enviar arquivos
-        </div>
+        {peers.length > 0 && (
+          <div className="text-muted-foreground mt-3.5 flex items-center justify-center gap-2 text-[12.5px]">
+            <svg
+              width="15"
+              height="15"
+              viewBox="0 0 14 14"
+              fill="none"
+              stroke="var(--primary)"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+            >
+              <path d="M2 7l3 3 7-7" />
+            </svg>
+            Toque num dispositivo para enviar arquivos
+          </div>
+        )}
       </div>
 
       {sheet && <RequestSheet onClose={() => setSheet(false)} />}

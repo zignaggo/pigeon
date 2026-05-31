@@ -15,6 +15,13 @@ export const stopServer = () => invoke<void>("stop_server");
 export const sendFile = (targetIp: string, filePath: string) =>
   invoke<void>("send_file", { targetIp, filePath });
 
+export const startDiscovery = (nick: string, deviceId: string) =>
+  invoke<void>("start_discovery", { nick, deviceId });
+
+export const stopDiscovery = () => invoke<void>("stop_discovery");
+
+export const setNick = (nick: string) => invoke<void>("set_nick", { nick });
+
 async function pickPath(directory: boolean): Promise<string | null> {
   const selected = await openDialog({ directory, multiple: false });
   if (typeof selected === "string") return selected;

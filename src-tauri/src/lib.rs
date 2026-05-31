@@ -1,8 +1,10 @@
 mod client;
+mod discovery;
 mod server;
 
 use std::sync::Arc;
 
+use discovery::DiscoveryState;
 use server::ServerState;
 use tauri::{AppHandle, Manager, State};
 
@@ -11,6 +13,7 @@ use tauri_plugin_android_fs::{AndroidFsExt, FileUri};
 
 struct AppState {
     server: Arc<ServerState>,
+    discovery: Arc<DiscoveryState>,
 }
 
 #[tauri::command]
@@ -53,6 +56,27 @@ async fn send_data(
     data: Vec<u8>,
 ) -> Result<(), String> {
     client::send_data(app, target_ip, name, data).await
+}
+
+#[tauri::command]
+async fn start_discovery(
+    app: AppHandle,
+    state: State<'_, AppState>,
+    nick: String,
+    device_id: String,
+) -> Result<(), String> {
+    discovery::start(app, state.discovery.clone(), nick, device_id).await
+}
+
+#[tauri::command]
+async fn stop_discovery(state: State<'_, AppState>) -> Result<(), String> {
+    discovery::stop(state.discovery.clone()).await
+}
+
+#[tauri::command]
+async fn set_nick(state: State<'_, AppState>, nick: String) -> Result<(), String> {
+    discovery::set_nick(state.discovery.clone(), nick).await;
+    Ok(())
 }
 
 #[tauri::command]
@@ -152,6 +176,7 @@ pub fn run() {
             app.handle().plugin(tauri_plugin_android_fs::init())?;
             app.manage(AppState {
                 server: Arc::new(ServerState::new()),
+                discovery: Arc::new(DiscoveryState::new()),
             });
             Ok(())
         })
@@ -161,6 +186,9 @@ pub fn run() {
             stop_server,
             send_file,
             send_data,
+            start_discovery,
+            stop_discovery,
+            set_nick,
             default_save_dir,
             saf_pick_dir,
             saf_import_file,

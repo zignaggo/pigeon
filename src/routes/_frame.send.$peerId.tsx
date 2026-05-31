@@ -10,13 +10,15 @@ import {
   PMFileRow,
   PMToggle,
 } from "@/components/pigeon/mobile";
-import { MFILES, PEERS, TOTAL_SIZE } from "@/lib/mock";
+import { MFILES, TOTAL_SIZE } from "@/lib/mock";
+import { toUiPeer } from "@/lib/peer-map";
+import { getPeerById } from "@/lib/peers-store";
 
 export const Route = createFileRoute("/_frame/send/$peerId")({
   loader: ({ params }) => {
-    const peer = PEERS.find((p) => p.id === params.peerId);
-    if (!peer) throw redirect({ to: "/rede" });
-    return peer;
+    const discovered = getPeerById(params.peerId);
+    if (!discovered) throw redirect({ to: "/rede" });
+    return toUiPeer(discovered);
   },
   component: SendScreen,
 });

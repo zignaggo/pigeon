@@ -2,6 +2,8 @@
 
 Plano de implementação da descoberta automática de peers na rede local.
 
+> **Foco: mobile (Android) primeiro, desktop depois.** O núcleo (Rust + frontend) é compartilhado entre os alvos; a validação prioriza Android ↔ Android antes do desktop.
+
 ## Decisões
 
 - **Identidade:** `device_id` (UUID v4) gerado uma vez no front e persistido no
@@ -124,8 +126,13 @@ Mais tarde, o toggle "Visível na rede" dos Ajustes controla isso.
 
 ## Ordem de implementação
 
-1. **Desktop primeiro**: deps Cargo, `discovery.rs`, comandos em `lib.rs`.
-2. **Frontend**: `device-id`, `api`, `peers-store`, `use-peers`, trocar o mock no
-   `/rede`, ajustar o envio por IP. Validar Windows ↔ Windows.
-3. **Android**: manifest, MulticastLock, join multicast por interface. Validar
-   Windows ↔ Android e Android ↔ Android.
+Mobile primeiro. O núcleo é compartilhado; a diferença é onde validamos.
+
+1. **Núcleo compartilhado (Rust)**: deps Cargo, `discovery.rs` (socket multicast,
+   broadcaster, listener, reaper), comandos em `lib.rs`. Igual nos dois alvos.
+2. **Frontend**: `device-id`, `api`, `peers-store`, `use-peers`, mapper,
+   trocar o mock no `/rede`, ciclo de vida no `_frame`.
+3. **Android (alvo principal)**: manifest (permissões), MulticastLock via
+   `jni` + `ndk-context`, join multicast por interface. **Validar Android ↔
+   Android primeiro** em device físico.
+4. **Desktop em seguida**: validar Windows ↔ Android e Windows ↔ Windows.
