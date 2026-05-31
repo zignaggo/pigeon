@@ -18,8 +18,8 @@ export function Switch({ checked, onChange, disabled }: Props) {
         'relative inline-flex h-7 w-12 shrink-0 items-center rounded-full border transition-colors duration-300',
         'disabled:cursor-not-allowed disabled:opacity-60',
         checked
-          ? 'border-transparent bg-[linear-gradient(160deg,var(--lagoon),var(--lagoon-deep))]'
-          : 'border-[var(--line)] bg-[var(--chip-bg)]',
+          ? 'bg-primary border-transparent'
+          : 'border-border bg-muted',
       )}
     >
       <span

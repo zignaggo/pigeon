@@ -12,13 +12,13 @@ export function Panel({ icon, title, children, className }: Props) {
   return (
     <section
       className={cn(
-        "feature-card flex flex-col gap-2.5 rounded-2xl border border-[var(--line)] p-4 transition-all duration-200",
+        "feature-card border-border bg-card flex flex-col gap-2.5 rounded-2xl border p-4 transition-all duration-200",
         className,
       )}
     >
       <div className="mb-0.5 flex items-center gap-2">
         {icon && <span className="text-base">{icon}</span>}
-        <h2 className="m-0 text-base font-bold text-[var(--sea-ink)]">
+        <h2 className="text-foreground m-0 text-base font-bold">
           {title}
         </h2>
       </div>
@@ -29,7 +29,7 @@ export function Panel({ icon, title, children, className }: Props) {
 
 export function FieldLabel({ children }: { children: ReactNode }) {
   return (
-    <label className="mt-0.5 text-xs font-semibold text-[var(--sea-ink-soft)]">
+    <label className="text-muted-foreground mt-0.5 text-xs font-semibold">
       {children}
     </label>
   );

@@ -47,7 +47,7 @@ export function SendPanel() {
         </Button>
       </div>
       {filePath && (
-        <p className="animate-in fade-in slide-in-from-top-1 m-0 break-all text-xs font-semibold text-[var(--lagoon-deep)] duration-300">
+        <p className="animate-in fade-in slide-in-from-top-1 text-primary m-0 break-all text-xs font-semibold duration-300">
           📎 {fileNameOf(filePath)}
         </p>
       )}
@@ -57,12 +57,12 @@ export function SendPanel() {
       </Button>
 
       {progress && (
-        <div className="animate-in fade-in relative h-[26px] overflow-hidden rounded-lg border border-[var(--line)] bg-[var(--surface-strong)] duration-300">
+        <div className="animate-in fade-in border-border bg-background relative h-[26px] overflow-hidden rounded-lg border duration-300">
           <div
-            className="absolute inset-y-0 left-0 bg-[linear-gradient(90deg,var(--lagoon),var(--lagoon-deep))] transition-[width] duration-100 ease-linear"
+            className="absolute inset-y-0 left-0 bg-[linear-gradient(90deg,var(--primary),var(--chart-2))] transition-[width] duration-100 ease-linear"
             style={{ width: `${pct}%` }}
           />
-          <span className="relative block text-center text-xs font-semibold leading-[26px] text-[var(--sea-ink)]">
+          <span className="text-foreground relative block text-center text-xs font-semibold leading-[26px]">
             {formatBytes(progress.sent)} / {formatBytes(progress.total)} · {pct}
             %
           </span>

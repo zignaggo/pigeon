@@ -28,7 +28,7 @@ export function ReceivePanel() {
       {mobile ? (
         <>
           <div className="flex items-center gap-2">
-            <div className="flex-1 truncate rounded-[10px] border border-[var(--line)] bg-[var(--surface-strong)] px-3 py-2.5 text-sm text-[var(--sea-ink)]">
+            <div className="border-border bg-background text-foreground flex-1 truncate rounded-[10px] border px-3 py-2.5 text-sm">
               {safDirName ?? 'Nenhuma pasta escolhida'}
             </div>
             <Button variant="ghost" onClick={pickSafDir}>
@@ -36,7 +36,7 @@ export function ReceivePanel() {
             </Button>
           </div>
           {!safDirName && (
-            <p className="m-0 text-xs text-[var(--sea-ink-soft)]">
+            <p className="text-muted-foreground m-0 text-xs">
               Sem uma pasta escolhida, os arquivos ficam no cache do app.
             </p>
           )}
@@ -55,17 +55,17 @@ export function ReceivePanel() {
         </div>
       )}
 
-      <div className="mt-1 flex items-center justify-between rounded-[10px] border border-[var(--line)] bg-[var(--surface-strong)] px-3 py-2.5">
+      <div className="border-border bg-background mt-1 flex items-center justify-between rounded-[10px] border px-3 py-2.5">
         <div className="flex items-center gap-2.5">
           <span
             className={cn(
               'h-2.5 w-2.5 rounded-full transition-colors duration-300',
               serverRunning
-                ? 'bg-[#2ea043] shadow-[0_0_0_3px_rgba(46,160,67,0.22)] animate-pulse'
-                : 'bg-[var(--sea-ink-soft)] opacity-50',
+                ? 'bg-chart-3 ring-chart-3/25 animate-pulse ring-[3px]'
+                : 'bg-muted-foreground opacity-50',
             )}
           />
-          <span className="text-sm font-semibold text-[var(--sea-ink)]">
+          <span className="text-foreground text-sm font-semibold">
             {serverRunning ? 'Servidor ativo · porta 7878' : 'Servidor parado'}
           </span>
         </div>

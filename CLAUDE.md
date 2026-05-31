@@ -1,5 +1,9 @@
 # POC Pombo — Contexto para retomada
 
+> **Direção de design do produto:** o bundle de design (desktop Win11 + mobile iPhone,
+> paleta cream+coral, tokens `PomboTokens`) está em [`docs/design/`](docs/design/README.md).
+> É referência do **produto**, não da POC — a POC continua sem design system (ver abaixo).
+
 ## Objetivo único da POC
 
 **Validar que é possível usar Tauri 2 para construir um app de transferência de arquivos na rede local que rode no Windows 11 e no Android com o mesmo código.**

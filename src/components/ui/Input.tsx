@@ -6,10 +6,10 @@ export function Input({ className, ...props }: InputHTMLAttributes<HTMLInputElem
     <input
       spellCheck={false}
       className={cn(
-        'w-full rounded-[10px] border border-[var(--line)] bg-[var(--surface-strong)] px-3 py-2.5',
-        'font-mono text-sm text-[var(--sea-ink)] outline-none transition-all duration-200',
-        'placeholder:text-[var(--sea-ink-soft)] placeholder:opacity-60',
-        'focus:border-[var(--lagoon)] focus:shadow-[0_0_0_3px_rgba(79,184,178,0.18)]',
+        'border-border bg-background w-full rounded-[10px] border px-3 py-2.5',
+        'text-foreground font-mono text-sm outline-none transition-all duration-200',
+        'placeholder:text-muted-foreground placeholder:opacity-60',
+        'focus:border-ring focus:ring-ring/30 focus:ring-[3px]',
         'disabled:opacity-60',
         className,
       )}
