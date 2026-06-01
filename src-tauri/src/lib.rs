@@ -89,6 +89,30 @@ async fn set_nick(state: State<'_, AppState>, nick: String) -> Result<(), String
     Ok(())
 }
 
+#[cfg(not(target_os = "android"))]
+#[tauri::command]
+fn open_path(path: String) -> Result<(), String> {
+    opener::open(&path).map_err(|e| e.to_string())
+}
+
+#[cfg(not(target_os = "android"))]
+#[tauri::command]
+fn reveal_path(path: String) -> Result<(), String> {
+    opener::reveal(&path).map_err(|e| e.to_string())
+}
+
+#[cfg(target_os = "android")]
+#[tauri::command]
+fn open_path(_path: String) -> Result<(), String> {
+    Err("Abra pelo gerenciador de arquivos do dispositivo".into())
+}
+
+#[cfg(target_os = "android")]
+#[tauri::command]
+fn reveal_path(_path: String) -> Result<(), String> {
+    Err("Abra pelo gerenciador de arquivos do dispositivo".into())
+}
+
 #[tauri::command]
 fn default_save_dir(app: AppHandle) -> Result<String, String> {
     #[cfg(target_os = "android")]
@@ -246,6 +270,8 @@ pub fn run() {
             start_discovery,
             stop_discovery,
             set_nick,
+            open_path,
+            reveal_path,
             default_save_dir,
             saf_pick_dir,
             saf_import_file,

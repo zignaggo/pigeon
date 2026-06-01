@@ -84,7 +84,11 @@ export function useReceive(): void {
           peer: snap.from || "rede",
           size: snap.total,
           ts: Date.now(),
-        }).then(() => queryClient.invalidateQueries({ queryKey: ["history"] }));
+          path: e.payload.path,
+        }).then(() => {
+          void queryClient.invalidateQueries({ queryKey: ["history"] });
+          void queryClient.invalidateQueries({ queryKey: ["received"] });
+        });
 
         if (isAndroid()) {
           const saf = getSafDir();

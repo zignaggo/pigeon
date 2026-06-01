@@ -319,9 +319,23 @@ export function PMToggle({
 }
 
 // ── Bottom tab bar (navbar) ──────────────────────────────────
-export type Tab = "rede" | "historico" | "ajustes";
+export type Tab = "rede" | "recebidos" | "historico" | "ajustes";
 
 const ICONS: Record<Tab, (active: boolean) => ReactNode> = {
+  recebidos: (a) => (
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={a ? 1.9 : 1.6}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M8 2v7M5 6.5l3 3 3-3M3 13h10" />
+    </svg>
+  ),
   rede: (a) => (
     <svg
       width="22"
@@ -372,6 +386,7 @@ const ICONS: Record<Tab, (active: boolean) => ReactNode> = {
 
 const TABS: { id: Tab; label: string }[] = [
   { id: "rede", label: "Por perto" },
+  { id: "recebidos", label: "Recebidos" },
   { id: "historico", label: "Histórico" },
   { id: "ajustes", label: "Ajustes" },
 ];

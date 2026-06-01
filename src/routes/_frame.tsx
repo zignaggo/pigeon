@@ -20,6 +20,7 @@ import { getNick } from "@/lib/nick";
 
 const TAB_PATH = {
   rede: "/rede",
+  recebidos: "/recebidos",
   historico: "/historico",
   ajustes: "/ajustes",
 } as const;
@@ -41,9 +42,11 @@ function FrameLayout() {
   const { pathname } = useLocation();
   const active: Tab = pathname.startsWith("/historico")
     ? "historico"
-    : pathname.startsWith("/ajustes")
-      ? "ajustes"
-      : "rede";
+    : pathname.startsWith("/recebidos")
+      ? "recebidos"
+      : pathname.startsWith("/ajustes")
+        ? "ajustes"
+        : "rede";
 
   return (
     <div

@@ -8,6 +8,7 @@ export type HistoryRecord = {
   peer: string;
   size: number;
   ts: number;
+  path?: string;
 };
 
 const DB_NAME = "pigeon";

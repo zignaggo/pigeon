@@ -32,6 +32,24 @@ const TABS: { id: Tab; label: string; icon: ReactNode }[] = [
     ),
   },
   {
+    id: "recebidos",
+    label: "Recebidos",
+    icon: (
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 16 16"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M8 2v7M5 6.5l3 3 3-3M3 13h10" />
+      </svg>
+    ),
+  },
+  {
     id: "historico",
     label: "Histórico",
     icon: (

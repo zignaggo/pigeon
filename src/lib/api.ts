@@ -15,6 +15,11 @@ export const stopServer = () => invoke<void>("stop_server");
 export const sendFile = (targetIp: string, filePath: string) =>
   invoke<void>("send_file", { targetIp, filePath });
 
+export const openPath = (path: string) => invoke<void>("open_path", { path });
+
+export const revealPath = (path: string) =>
+  invoke<void>("reveal_path", { path });
+
 export const startDiscovery = (
   nick: string,
   deviceId: string,
