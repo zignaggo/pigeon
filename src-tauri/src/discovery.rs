@@ -139,7 +139,10 @@ pub async fn start(
 
     dlog(&app, format!("bind 0.0.0.0:{DISCOVERY_PORT} ok"));
     dlog(&app, format!("interfaces locais: {:?}", interface_ipv4s()));
-    dlog(&app, format!("multicast {GROUP} join em {} iface(s)", joined.len()));
+    dlog(
+        &app,
+        format!("multicast {GROUP} join em {} iface(s)", joined.len()),
+    );
     dlog(&app, format!("meu ip: {}", local_ipv4()));
 
     let dests = announce_targets();
@@ -323,7 +326,11 @@ fn result_label(res: &std::io::Result<usize>) -> String {
 
 fn snapshot(inner: &Inner) -> PeersSnapshot {
     PeersSnapshot {
-        peers: inner.peers.values().map(|entry| entry.peer.clone()).collect(),
+        peers: inner
+            .peers
+            .values()
+            .map(|entry| entry.peer.clone())
+            .collect(),
     }
 }
 
@@ -363,7 +370,10 @@ async fn send_bye(state: &DiscoveryState) {
             .send_to(&bytes, SocketAddrV4::new(GROUP, DISCOVERY_PORT))
             .await;
         let _ = socket
-            .send_to(&bytes, SocketAddrV4::new(Ipv4Addr::BROADCAST, DISCOVERY_PORT))
+            .send_to(
+                &bytes,
+                SocketAddrV4::new(Ipv4Addr::BROADCAST, DISCOVERY_PORT),
+            )
             .await;
     }
 }
@@ -477,7 +487,9 @@ fn acquire_multicast_lock() -> Result<jni::objects::GlobalRef, String> {
         .l()
         .map_err(|e| e.to_string())?;
 
-    let tag = env.new_string("pigeon-discovery").map_err(|e| e.to_string())?;
+    let tag = env
+        .new_string("pigeon-discovery")
+        .map_err(|e| e.to_string())?;
     let lock = env
         .call_method(
             &wifi_manager,

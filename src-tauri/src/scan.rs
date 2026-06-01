@@ -90,7 +90,11 @@ pub async fn start(
     device_id: String,
     threshold: u32,
 ) -> Result<(), String> {
-    let threshold = if threshold == 0 { DEFAULT_THRESHOLD } else { threshold };
+    let threshold = if threshold == 0 {
+        DEFAULT_THRESHOLD
+    } else {
+        threshold
+    };
     {
         let mut inner = state.inner.lock().await;
         if inner.running {
@@ -118,7 +122,10 @@ pub async fn start(
         }
     };
 
-    dlog(&app, format!("bind 0.0.0.0:{DISCOVERY_PORT} ok (modo varredura)"));
+    dlog(
+        &app,
+        format!("bind 0.0.0.0:{DISCOVERY_PORT} ok (modo varredura)"),
+    );
     dlog(&app, format!("meu ip: {}", local_ipv4()));
     dlog(&app, format!("limite de ips: {threshold}"));
 
@@ -131,7 +138,10 @@ pub async fn start(
             loop {
                 let (ann, threshold) = {
                     let inner = state.inner.lock().await;
-                    (make_announcement(&inner.id, &inner.nick, "hello"), inner.threshold)
+                    (
+                        make_announcement(&inner.id, &inner.nick, "hello"),
+                        inner.threshold,
+                    )
                 };
                 let targets = scan_targets(threshold);
                 if let Ok(bytes) = serde_json::to_vec(&ann) {
@@ -281,7 +291,10 @@ pub async fn set_nick(state: Arc<ScanState>, nick: String) {
 async fn send_bye(state: &ScanState) {
     let (ann, threshold) = {
         let inner = state.inner.lock().await;
-        (make_announcement(&inner.id, &inner.nick, "bye"), inner.threshold)
+        (
+            make_announcement(&inner.id, &inner.nick, "bye"),
+            inner.threshold,
+        )
     };
     let Ok(bytes) = serde_json::to_vec(&ann) else {
         return;
@@ -325,7 +338,11 @@ fn bind_socket() -> std::io::Result<UdpSocket> {
 
 fn snapshot(inner: &Inner) -> PeersSnapshot {
     PeersSnapshot {
-        peers: inner.peers.values().map(|entry| entry.peer.clone()).collect(),
+        peers: inner
+            .peers
+            .values()
+            .map(|entry| entry.peer.clone())
+            .collect(),
     }
 }
 

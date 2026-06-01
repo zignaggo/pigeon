@@ -10,7 +10,12 @@ import {
   PMToggle,
 } from "@/components/pigeon/mobile";
 import { restartDiscovery } from "@/hooks/use-peers";
-import { setNick as setNickBackend } from "@/lib/api";
+import { restartServer } from "@/hooks/use-server";
+import {
+  pickDirectory,
+  safPickDir,
+  setNick as setNickBackend,
+} from "@/lib/api";
 import { getDeviceId } from "@/lib/device-id";
 import {
   type DiscoveryMode,
@@ -20,7 +25,17 @@ import {
   setThreshold,
 } from "@/lib/discovery-config";
 import { getNick, setNick as persistNick } from "@/lib/nick";
+import {
+  getSafDir,
+  getSaveDir,
+  getSoundEnabled,
+  setSafDir,
+  setSaveDir,
+  setSoundEnabled,
+} from "@/lib/receive-config";
 import { cn, initialsOf } from "@/lib/utils";
+
+const isAndroid = /android/i.test(navigator.userAgent);
 
 const MONO = '"Geist Mono", ui-monospace, monospace';
 
@@ -48,21 +63,22 @@ function Row({
   control,
   isLast,
   disabled,
+  onClick,
 }: {
   label: string;
   desc?: string;
   control: ReactNode;
   isLast?: boolean;
   disabled?: boolean;
+  onClick?: () => void;
 }) {
-  return (
-    <div
-      className={cn(
-        "flex items-center gap-4 px-[15px] py-3.5",
-        !isLast && "border-border border-b",
-        disabled && "opacity-55",
-      )}
-    >
+  const className = cn(
+    "flex w-full items-center gap-4 px-[15px] py-3.5 text-left",
+    !isLast && "border-border border-b",
+    disabled && "opacity-55",
+  );
+  const content = (
+    <>
       <div className="min-w-0 flex-1">
         <div className="text-foreground flex items-center gap-2 text-[14.5px] font-semibold">
           {label}
@@ -73,11 +89,20 @@ function Row({
           )}
         </div>
         {desc && (
-          <div className="text-muted-foreground mt-0.5 text-xs">{desc}</div>
+          <div className="text-muted-foreground mt-0.5 truncate text-xs">
+            {desc}
+          </div>
         )}
       </div>
       {control}
-    </div>
+    </>
+  );
+  return onClick ? (
+    <button type="button" onClick={onClick} className={className}>
+      {content}
+    </button>
+  ) : (
+    <div className={className}>{content}</div>
   );
 }
 
@@ -118,6 +143,35 @@ function SettingsScreen() {
     setThreshold(clamped);
     setTh(clamped);
     void restartDiscovery();
+  };
+
+  const [sound, setSoundState] = useState(getSoundEnabled);
+  const [saveLabel, setSaveLabel] = useState<string>(() => {
+    if (isAndroid)
+      return getSafDir() ? "Pasta escolhida" : "Padrão (cache do app)";
+    return getSaveDir() ?? "Downloads · pasta Pigeon";
+  });
+
+  const changeSound = (value: boolean) => {
+    setSoundEnabled(value);
+    setSoundState(value);
+  };
+
+  const pickFolder = async () => {
+    if (isAndroid) {
+      const dir = await safPickDir();
+      if (dir) {
+        setSafDir(dir);
+        setSaveLabel("Pasta escolhida");
+      }
+      return;
+    }
+    const path = await pickDirectory();
+    if (path) {
+      setSaveDir(path);
+      setSaveLabel(path);
+      void restartServer();
+    }
   };
 
   return (
@@ -259,7 +313,9 @@ function SettingsScreen() {
           <Row
             label="Exigir aprovação"
             desc="Confirmar cada pedido de conexão"
-            control={<PMToggle on={false} disabled ariaLabel="Exigir aprovação" />}
+            control={
+              <PMToggle on={false} disabled ariaLabel="Exigir aprovação" />
+            }
             disabled
             isLast
           />
@@ -270,19 +326,27 @@ function SettingsScreen() {
         <PMCard>
           <Row
             label="Salvar em"
-            desc="Downloads · pasta Pigeon"
+            desc={saveLabel}
             control={Chevron}
-            disabled
+            onClick={() => void pickFolder()}
           />
           <Row
             label="Abrir após receber"
-            control={<PMToggle on={false} disabled ariaLabel="Abrir após receber" />}
+            control={
+              <PMToggle on={false} disabled ariaLabel="Abrir após receber" />
+            }
             disabled
           />
           <Row
             label="Notificar com som"
-            control={<PMToggle on={false} disabled ariaLabel="Notificar com som" />}
-            disabled
+            desc="Toca um som ao receber um arquivo"
+            control={
+              <PMToggle
+                on={sound}
+                onChange={changeSound}
+                ariaLabel="Notificar com som"
+              />
+            }
             isLast
           />
         </PMCard>
@@ -294,7 +358,11 @@ function SettingsScreen() {
             label="Criptografia ponta a ponta"
             desc="Ainda não disponível nesta versão"
             control={
-              <PMToggle on={false} disabled ariaLabel="Criptografia ponta a ponta" />
+              <PMToggle
+                on={false}
+                disabled
+                ariaLabel="Criptografia ponta a ponta"
+              />
             }
             disabled
           />

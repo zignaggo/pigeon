@@ -1,5 +1,5 @@
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 import { PigeonAvatar } from "@/components/pigeon/atoms";
 import {
@@ -10,12 +10,12 @@ import {
   PMFileRow,
   RingBig,
 } from "@/components/pigeon/mobile";
-import { MFILES, TOTAL_SIZE } from "@/lib/mock";
+import { useTransfer } from "@/hooks/use-transfer";
+import { formatBytes } from "@/lib/format";
 import { toUiPeer } from "@/lib/peer-map";
 import { getPeerById } from "@/lib/peers-store";
 
 const MONO = '"Geist Mono", ui-monospace, monospace';
-const THRESHOLDS = [8, 18, 70, 100];
 
 export const Route = createFileRoute("/_frame/transfer/$peerId")({
   loader: ({ params }) => {
@@ -26,36 +26,35 @@ export const Route = createFileRoute("/_frame/transfer/$peerId")({
   component: TransferScreen,
 });
 
+function extOf(name: string): string {
+  return (name.split(".").pop() || "bin").toLowerCase();
+}
+
 function TransferScreen() {
   const peer = Route.useLoaderData();
   const navigate = useNavigate();
-  const [pct, setPct] = useState(0);
-  const [paused, setPaused] = useState(false);
+  const t = useTransfer();
 
   useEffect(() => {
-    if (paused || pct >= 100) return;
-    const id = setTimeout(
-      () => setPct((p) => Math.min(100, p + (p > 80 ? 2.5 : 4.5))),
-      110,
-    );
-    return () => clearTimeout(id);
-  }, [pct, paused]);
+    if (t.status === "idle") navigate({ to: "/rede" });
+  }, [t.status, navigate]);
 
-  const done = pct >= 100;
-  const mbSent = Math.round((pct / 100) * 485);
+  const done = t.status === "done";
+  const failed = t.status === "error";
+  const pct =
+    t.total > 0 ? Math.min(100, (t.sent / t.total) * 100) : done ? 100 : 0;
 
-  const fileState = (
-    i: number,
-  ): { state: "queued" | "sending" | "done"; progress: number } => {
-    if (pct >= THRESHOLDS[i]) return { state: "done", progress: 100 };
-    const prev = i === 0 ? 0 : THRESHOLDS[i - 1];
-    if (pct > prev)
-      return {
-        state: "sending",
-        progress: Math.round(((pct - prev) / (THRESHOLDS[i] - prev)) * 100),
-      };
-    return { state: "queued", progress: 0 };
-  };
+  const eyebrow = done ? "Concluído" : failed ? "Falha" : "Enviando para";
+  const headline = done
+    ? "Enviado!"
+    : failed
+      ? "Falhou"
+      : `${Math.round(pct)}%`;
+  const subline = failed
+    ? (t.error ?? "erro desconhecido")
+    : done
+      ? formatBytes(t.total)
+      : `${formatBytes(t.sent)} / ${formatBytes(t.total)}`;
 
   return (
     <div
@@ -64,7 +63,7 @@ function TransferScreen() {
     >
       <PushHeader
         onBack={() => navigate({ to: "/rede" })}
-        eyebrow={done ? "Concluído" : "Enviando para"}
+        eyebrow={eyebrow}
         title={
           <>
             <PigeonAvatar
@@ -79,102 +78,70 @@ function TransferScreen() {
       />
       <div className="pm-screen flex-1 overflow-auto p-4">
         <PMCard className="px-5 py-[22px] text-center">
-          <RingBig pct={pct} done={done} />
+          <RingBig pct={failed ? 100 : pct} done={done} />
           <div
             className="text-foreground mt-3.5 text-[30px] font-extrabold"
             style={{ letterSpacing: -1 }}
           >
-            {done ? "Enviado!" : `${Math.round(pct)}%`}
+            {headline}
           </div>
           <div
-            className="text-muted-foreground mt-0.5 text-[13px]"
-            style={{ fontFamily: MONO }}
+            className="text-muted-foreground mt-1 text-[13px] break-words"
+            style={{ fontFamily: MONO, color: failed ? "#ff7a7a" : undefined }}
           >
-            {done
-              ? `${TOTAL_SIZE} · 4 arquivos entregues`
-              : `${mbSent} MB / ${TOTAL_SIZE}`}
+            {subline}
           </div>
-          {!done && (
-            <div
-              className="text-muted-foreground mt-3 flex flex-wrap justify-center gap-4 text-xs"
-              style={{ fontFamily: MONO }}
-            >
-              <span>↑ 24,6 MB/s</span>
-              <span>~{Math.max(1, Math.round((100 - pct) / 8))} s</span>
-              <span
-                className="inline-flex items-center gap-1"
-                style={{ color: "var(--chart-3)" }}
-              >
-                <svg
-                  width="11"
-                  height="11"
-                  viewBox="0 0 14 14"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.6"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M7 7v-.01M4 6V4.5a3 3 0 016 0V6M3 6h8v6H3z" />
-                </svg>
-                AES-256
-              </span>
-            </div>
-          )}
           <div className="bg-muted mt-4 h-[7px] overflow-hidden rounded">
             <div
               className="h-full rounded"
               style={{
-                width: `${pct}%`,
-                background: done
-                  ? "var(--chart-3)"
-                  : "linear-gradient(90deg, var(--primary), var(--chart-2))",
+                width: `${failed ? 100 : pct}%`,
+                background: failed
+                  ? "#ff7a7a"
+                  : done
+                    ? "var(--chart-3)"
+                    : "linear-gradient(90deg, var(--primary), var(--chart-2))",
                 transition: "width .15s linear",
               }}
             />
           </div>
-          {!done && (
-            <button
-              type="button"
-              onClick={() => setPaused((p) => !p)}
-              className="border-border bg-card text-muted-foreground mt-4 rounded-[14px] border px-[22px] py-2.5 text-[13px] font-semibold"
-            >
-              {paused ? "Retomar" : "Pausar"}
-            </button>
-          )}
         </PMCard>
 
-        <div className="mt-[18px]">
-          <PMSectionLabel>Arquivos ({MFILES.length})</PMSectionLabel>
-          <PMCard>
-            {MFILES.map((f, i) => {
-              const fs = fileState(i);
-              return (
-                <PMFileRow
-                  key={f.name}
-                  file={f}
-                  progress={fs.progress}
-                  state={fs.state}
-                  isLast={i === MFILES.length - 1}
-                />
-              );
-            })}
-          </PMCard>
-        </div>
+        {t.name && (
+          <div className="mt-[18px]">
+            <PMSectionLabel>Arquivo</PMSectionLabel>
+            <PMCard>
+              <PMFileRow
+                file={{
+                  name: t.name,
+                  ext: extOf(t.name),
+                  size: formatBytes(t.total),
+                }}
+                progress={failed ? undefined : pct}
+                state={done ? "done" : "sending"}
+                isLast
+              />
+            </PMCard>
+          </div>
+        )}
       </div>
 
-      {done && (
+      {(done || failed) && (
         <BottomBar>
           <button
             type="button"
-            onClick={() => navigate({ to: "/historico" })}
+            onClick={() =>
+              failed
+                ? navigate({ to: "/send/$peerId", params: { peerId: peer.id } })
+                : navigate({ to: "/rede" })
+            }
             className="bg-primary flex-1 rounded-2xl border-none px-4 py-[15px] text-[15.5px] font-bold text-white"
             style={{
               boxShadow:
                 "0 8px 20px color-mix(in oklab, var(--primary) 40%, transparent)",
             }}
           >
-            Concluir
+            {failed ? "Tentar de novo" : "Concluir"}
           </button>
         </BottomBar>
       )}

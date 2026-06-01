@@ -172,10 +172,7 @@ pub async fn send_data(
     stream.shutdown().await.ok();
 
     log::info!("sent {} bytes to {}", sent, addr);
-    let _ = app.emit(
-        "send-done",
-        SendDone { name, target: addr },
-    );
+    let _ = app.emit("send-done", SendDone { name, target: addr });
 
     Ok(())
 }

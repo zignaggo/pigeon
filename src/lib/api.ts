@@ -43,3 +43,18 @@ export const safPickDir = () => invoke<SafDir | null>("saf_pick_dir");
 
 export const safImportFile = (dir: SafDir, srcPath: string, name: string) =>
   invoke<void>("saf_import_file", { dir, srcPath, name });
+
+export const safPickFile = () =>
+  invoke<{ path: string; name: string } | null>("saf_pick_file");
+
+export type OutgoingFile = { path: string; name: string };
+
+export async function pickOutgoingFile(): Promise<OutgoingFile | null> {
+  if (/android/i.test(navigator.userAgent)) {
+    return (await safPickFile()) ?? null;
+  }
+  const path = await pickFile();
+  if (!path) return null;
+  const name = path.split(/[\\/]/).pop() || path;
+  return { path, name };
+}

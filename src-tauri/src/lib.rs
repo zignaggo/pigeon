@@ -43,11 +43,7 @@ async fn stop_server(state: State<'_, AppState>) -> Result<(), String> {
 }
 
 #[tauri::command]
-async fn send_file(
-    app: AppHandle,
-    target_ip: String,
-    file_path: String,
-) -> Result<(), String> {
+async fn send_file(app: AppHandle, target_ip: String, file_path: String) -> Result<(), String> {
     client::send_file(app, target_ip, file_path).await
 }
 
@@ -161,6 +157,45 @@ async fn saf_import_file(
     Ok(())
 }
 
+#[cfg(target_os = "android")]
+#[derive(serde::Serialize)]
+struct PickedFile {
+    path: String,
+    name: String,
+}
+
+#[cfg(target_os = "android")]
+#[tauri::command]
+async fn saf_pick_file(app: AppHandle) -> Result<Option<PickedFile>, String> {
+    let api = app.android_fs_async();
+    let uri = api
+        .file_picker()
+        .pick_file(None, &[], false)
+        .await
+        .map_err(|e| e.to_string())?;
+    let Some(uri) = uri else {
+        return Ok(None);
+    };
+    let name = api.get_name(&uri).await.map_err(|e| e.to_string())?;
+    let bytes = api.read(&uri).await.map_err(|e| e.to_string())?;
+    let dir = app
+        .path()
+        .app_cache_dir()
+        .map_err(|e| format!("cache dir: {e}"))?
+        .join("outgoing");
+    tokio::fs::create_dir_all(&dir)
+        .await
+        .map_err(|e| format!("mkdir: {e}"))?;
+    let path = dir.join(&name);
+    tokio::fs::write(&path, &bytes)
+        .await
+        .map_err(|e| format!("write cache: {e}"))?;
+    Ok(Some(PickedFile {
+        path: path.to_string_lossy().to_string(),
+        name,
+    }))
+}
+
 #[cfg(not(target_os = "android"))]
 #[tauri::command]
 async fn saf_pick_dir() -> Result<Option<String>, String> {
@@ -173,9 +208,16 @@ async fn saf_import_file() -> Result<(), String> {
     Err("SAF disponível apenas no Android".into())
 }
 
+#[cfg(not(target_os = "android"))]
+#[tauri::command]
+async fn saf_pick_file() -> Result<(), String> {
+    Err("SAF disponível apenas no Android".into())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
         .setup(|app| {
@@ -207,6 +249,7 @@ pub fn run() {
             default_save_dir,
             saf_pick_dir,
             saf_import_file,
+            saf_pick_file,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

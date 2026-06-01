@@ -46,7 +46,11 @@ impl ServerState {
     }
 }
 
-pub async fn start(app: AppHandle, state: Arc<ServerState>, save_dir: String) -> Result<(), String> {
+pub async fn start(
+    app: AppHandle,
+    state: Arc<ServerState>,
+    save_dir: String,
+) -> Result<(), String> {
     {
         let mut running = state.running.lock().await;
         if *running {
@@ -72,7 +76,10 @@ pub async fn start(app: AppHandle, state: Arc<ServerState>, save_dir: String) ->
         }
     };
 
-    log::info!("server listening on {bind_addr}, save_dir={}", save_dir.display());
+    log::info!(
+        "server listening on {bind_addr}, save_dir={}",
+        save_dir.display()
+    );
 
     let app_clone = app.clone();
     let save_dir_clone = save_dir.clone();
@@ -83,7 +90,14 @@ pub async fn start(app: AppHandle, state: Arc<ServerState>, save_dir: String) ->
                     let app_inner = app_clone.clone();
                     let save_dir_inner = save_dir_clone.clone();
                     tokio::spawn(async move {
-                        if let Err(e) = handle_connection(app_inner.clone(), save_dir_inner, stream, peer.to_string()).await {
+                        if let Err(e) = handle_connection(
+                            app_inner.clone(),
+                            save_dir_inner,
+                            stream,
+                            peer.to_string(),
+                        )
+                        .await
+                        {
                             log::error!("connection error from {peer}: {e}");
                             let _ = app_inner.emit("error", ErrorEvent { message: e });
                         }
@@ -145,8 +159,8 @@ async fn handle_connection(
         .await
         .map_err(|e| format!("read header: {e}"))?;
 
-    let header: Header = serde_json::from_slice(&header_buf)
-        .map_err(|e| format!("parse header: {e}"))?;
+    let header: Header =
+        serde_json::from_slice(&header_buf).map_err(|e| format!("parse header: {e}"))?;
 
     log::info!(
         "incoming: name='{}' size={} from={}",
@@ -217,7 +231,10 @@ async fn adjust_extension(path: &Path, save_dir: &Path) -> Result<PathBuf, Strin
         .await
         .map_err(|e| format!("reopen for sniff: {e}"))?;
     let mut buf = [0u8; 16];
-    let n = f.read(&mut buf).await.map_err(|e| format!("sniff read: {e}"))?;
+    let n = f
+        .read(&mut buf)
+        .await
+        .map_err(|e| format!("sniff read: {e}"))?;
     drop(f);
 
     let Some(correct) = detect_extension(&buf[..n]) else {
@@ -270,7 +287,10 @@ fn detect_extension(header: &[u8]) -> Option<&'static str> {
     if header.starts_with(&[0x1F, 0x8B]) {
         return Some("gz");
     }
-    if header.starts_with(b"ID3") || header.starts_with(&[0xFF, 0xFB]) || header.starts_with(&[0xFF, 0xF3]) {
+    if header.starts_with(b"ID3")
+        || header.starts_with(&[0xFF, 0xFB])
+        || header.starts_with(&[0xFF, 0xF3])
+    {
         return Some("mp3");
     }
     if header.len() >= 12 && &header[4..8] == b"ftyp" {
@@ -299,9 +319,7 @@ fn sanitize_name(name: &str) -> String {
     let cleaned: String = base
         .chars()
         .map(|c| {
-            if c.is_ascii_alphanumeric()
-                || matches!(c, '.' | '_' | '-' | ' ' | '(' | ')')
-            {
+            if c.is_ascii_alphanumeric() || matches!(c, '.' | '_' | '-' | ' ' | '(' | ')') {
                 c
             } else {
                 '_'

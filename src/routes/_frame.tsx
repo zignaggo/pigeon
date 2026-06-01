@@ -9,8 +9,12 @@ import {
 import { DebugOverlay } from "@/components/devtools/debug-overlay";
 import { PMTabBar, type Tab } from "@/components/pigeon/mobile";
 import { Sidebar } from "@/components/pigeon/sidebar";
+import { TransferIndicator } from "@/components/transfer-indicator";
 import { useDebugSetup } from "@/hooks/use-debug";
 import { useDiscovery } from "@/hooks/use-peers";
+import { useReceive } from "@/hooks/use-receive";
+import { useServer } from "@/hooks/use-server";
+import { useTransferEvents } from "@/hooks/use-transfer";
 import { getNick } from "@/lib/nick";
 
 const TAB_PATH = {
@@ -27,8 +31,11 @@ export const Route = createFileRoute("/_frame")({
 });
 
 function FrameLayout() {
+  useServer();
   useDiscovery();
   useDebugSetup();
+  useTransferEvents();
+  useReceive();
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const active: Tab = pathname.startsWith("/historico")
@@ -65,6 +72,7 @@ function FrameLayout() {
             onChange={(t) => navigate({ to: TAB_PATH[t] })}
           />
         </div>
+        <TransferIndicator />
         <DebugOverlay />
       </div>
     </div>
