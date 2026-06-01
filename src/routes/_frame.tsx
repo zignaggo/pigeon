@@ -9,6 +9,7 @@ import {
 import { DebugOverlay } from "@/components/devtools/debug-overlay";
 import { PMTabBar, type Tab } from "@/components/pigeon/mobile";
 import { Sidebar } from "@/components/pigeon/sidebar";
+import { ReceiveIndicator } from "@/components/receive-indicator";
 import { TransferIndicator } from "@/components/transfer-indicator";
 import { useDebugSetup } from "@/hooks/use-debug";
 import { useDiscovery } from "@/hooks/use-peers";
@@ -73,6 +74,7 @@ function FrameLayout() {
           />
         </div>
         <TransferIndicator />
+        <ReceiveIndicator />
         <DebugOverlay />
       </div>
     </div>

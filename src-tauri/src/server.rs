@@ -25,6 +25,13 @@ struct ReceiveStarted {
 }
 
 #[derive(Clone, Serialize)]
+struct ReceiveProgress {
+    name: String,
+    received: u64,
+    total: u64,
+}
+
+#[derive(Clone, Serialize)]
 struct ReceiveDone {
     path: String,
 }
@@ -187,6 +194,8 @@ async fn handle_connection(
 
     let mut remaining = header.size;
     let mut buf = vec![0u8; 64 * 1024];
+    let mut received: u64 = 0;
+    let mut last_emit: u64 = 0;
 
     while remaining > 0 {
         let to_read = std::cmp::min(buf.len() as u64, remaining) as usize;
@@ -201,6 +210,19 @@ async fn handle_connection(
             .await
             .map_err(|e| format!("write file: {e}"))?;
         remaining -= n as u64;
+        received += n as u64;
+
+        if received - last_emit >= 256 * 1024 || remaining == 0 {
+            let _ = app.emit(
+                "receive-progress",
+                ReceiveProgress {
+                    name: safe_name.clone(),
+                    received,
+                    total: header.size,
+                },
+            );
+            last_emit = received;
+        }
     }
 
     file.flush().await.map_err(|e| format!("flush: {e}"))?;

@@ -16,6 +16,10 @@ export function getPeerById(id: string): DiscoveredPeer | undefined {
   return peers.find((peer) => peer.id === id);
 }
 
+export function getPeerByIp(ip: string): DiscoveredPeer | undefined {
+  return peers.find((peer) => peer.ip === ip);
+}
+
 export function subscribe(listener: () => void): () => void {
   listeners.add(listener);
   return () => listeners.delete(listener);
