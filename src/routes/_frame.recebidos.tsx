@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { FileIcon } from "@/components/pigeon/atoms";
 import { PMAppBar, PMCard, PMSectionLabel } from "@/components/pigeon/mobile";
 import { useReceivedFiles } from "@/hooks/use-received";
-import { openPath, revealPath } from "@/lib/api";
+import { openPath, revealPath, safOpenFile, safOpenPath } from "@/lib/api";
 import { formatBytes } from "@/lib/format";
 import { addLog } from "@/lib/log-store";
 import type { HistoryRecord } from "@/lib/history-db";
@@ -23,15 +23,26 @@ function when(ts: number): string {
   });
 }
 
+const isAndroid = /android/i.test(navigator.userAgent);
+
 function open(file: HistoryRecord) {
-  if (!file.path) {
-    addLog("warn", "receive", `has no path: ${String(file.id)}`);
+  if (file.uri) {
+    void safOpenFile(file.uri).catch((e) =>
+      addLog("warn", "receive", `abrir falhou: ${String(e)}`),
+    );
     return;
   }
-  const path = file.path;
-  void revealPath(path)
-    .catch(() => openPath(path))
-    .catch((e) => addLog("warn", "receive", `abrir falhou: ${String(e)}`));
+  if (file.path) {
+    const path = file.path;
+    const action = isAndroid
+      ? safOpenPath(path)
+      : revealPath(path).catch(() => openPath(path));
+    void action.catch((e) =>
+      addLog("warn", "receive", `abrir falhou: ${String(e)}`),
+    );
+    return;
+  }
+  addLog("warn", "receive", "sem caminho/uri para abrir");
 }
 
 function Item({ file, isLast }: { file: HistoryRecord; isLast?: boolean }) {
@@ -63,7 +74,7 @@ function Item({ file, isLast }: { file: HistoryRecord; isLast?: boolean }) {
         >
           {formatBytes(file.size)}
         </span>
-        {file.path && (
+        {(file.uri || file.path) && (
           <svg
             width="16"
             height="16"

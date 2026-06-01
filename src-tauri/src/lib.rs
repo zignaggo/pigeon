@@ -165,7 +165,7 @@ async fn saf_import_file(
     dir: FileUri,
     src_path: String,
     name: String,
-) -> Result<(), String> {
+) -> Result<FileUri, String> {
     let api = app.android_fs_async();
     let file_uri = api
         .create_new_file(&dir, &name, Some("application/octet-stream"))
@@ -178,7 +178,28 @@ async fn saf_import_file(
     let mut src = std::fs::File::open(&src_path).map_err(|e| format!("open src: {e}"))?;
     std::io::copy(&mut src, &mut dest).map_err(|e| format!("copy: {e}"))?;
     let _ = std::fs::remove_file(&src_path);
-    Ok(())
+    Ok(file_uri)
+}
+
+#[cfg(target_os = "android")]
+#[tauri::command]
+async fn saf_open_file(app: AppHandle, uri: FileUri) -> Result<(), String> {
+    app.android_fs_async()
+        .file_opener()
+        .open_file(&uri)
+        .await
+        .map_err(|e| e.to_string())
+}
+
+#[cfg(target_os = "android")]
+#[tauri::command]
+async fn saf_open_path(app: AppHandle, path: String) -> Result<(), String> {
+    let uri = FileUri::from_path(&path);
+    app.android_fs_async()
+        .file_opener()
+        .open_file(&uri)
+        .await
+        .map_err(|e| e.to_string())
 }
 
 #[cfg(target_os = "android")]
@@ -238,6 +259,18 @@ async fn saf_pick_file() -> Result<(), String> {
     Err("SAF disponível apenas no Android".into())
 }
 
+#[cfg(not(target_os = "android"))]
+#[tauri::command]
+async fn saf_open_file() -> Result<(), String> {
+    Err("SAF disponível apenas no Android".into())
+}
+
+#[cfg(not(target_os = "android"))]
+#[tauri::command]
+async fn saf_open_path() -> Result<(), String> {
+    Err("SAF disponível apenas no Android".into())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -276,6 +309,8 @@ pub fn run() {
             saf_pick_dir,
             saf_import_file,
             saf_pick_file,
+            saf_open_file,
+            saf_open_path,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

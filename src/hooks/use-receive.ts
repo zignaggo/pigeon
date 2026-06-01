@@ -77,29 +77,32 @@ export function useReceive(): void {
           });
         }
 
-        void addHistory({
-          dir: "in",
+        const base = {
+          dir: "in" as const,
           name,
           ext: extOf(name),
           peer: snap.from || "rede",
           size: snap.total,
           ts: Date.now(),
-          path: e.payload.path,
-        }).then(() => {
+        };
+        const saf = isAndroid() ? getSafDir() : null;
+
+        void (async () => {
+          if (saf) {
+            try {
+              const uri = await safImportFile(saf, e.payload.path, name);
+              await addHistory({ ...base, uri });
+              addLog("event", "receive", `salvo na pasta: ${name}`);
+            } catch (err) {
+              addLog("error", "receive", `mover p/ pasta falhou: ${String(err)}`);
+              await addHistory({ ...base, path: e.payload.path });
+            }
+          } else {
+            await addHistory({ ...base, path: e.payload.path });
+          }
           void queryClient.invalidateQueries({ queryKey: ["history"] });
           void queryClient.invalidateQueries({ queryKey: ["received"] });
-        });
-
-        if (isAndroid()) {
-          const saf = getSafDir();
-          if (saf) {
-            void safImportFile(saf, e.payload.path, name)
-              .then(() => addLog("event", "receive", `salvo na pasta: ${name}`))
-              .catch((err) =>
-                addLog("error", "receive", `mover p/ pasta falhou: ${String(err)}`),
-              );
-          }
-        }
+        })();
 
         if (resetTimer) clearTimeout(resetTimer);
         resetTimer = setTimeout(receiveReset, 4000);

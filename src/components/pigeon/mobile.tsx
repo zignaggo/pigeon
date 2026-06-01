@@ -33,9 +33,10 @@ export function PMAppBar({
   return (
     <div
       className={cn(
-        "bg-card/80 z-5 flex shrink-0 items-center gap-3 pl-4.5 pr-3.5 backdrop-blur-md pt-2",
+        "bg-card/80 z-5 flex shrink-0 items-center gap-3 pl-4.5 pr-3.5 backdrop-blur-md",
         big ? "border-none pb-2" : "border-border border-b pb-3",
       )}
+      style={{ paddingTop: "max(env(safe-area-inset-top, 0px), 0.5rem)" }}
     >
       {left}
       <div className="min-w-0 flex-1">
@@ -403,7 +404,10 @@ export function PMTabBar({
   onChange?: (t: Tab) => void;
 }) {
   return (
-    <div className="bg-card/80 border-border flex shrink-0 border-t pb-6 pt-[9px] backdrop-blur-lg">
+    <div
+      className="bg-card/80 border-border flex shrink-0 border-t pt-[9px] backdrop-blur-lg"
+      style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 1.5rem)" }}
+    >
       {TABS.map((t) => {
         const on = t.id === active;
         return (
@@ -561,7 +565,7 @@ export function PushHeader({
   return (
     <div
       className="bg-card/80 border-border flex shrink-0 items-center gap-2 border-b pl-3 pr-4 pb-3 backdrop-blur-md"
-      style={{ paddingTop: 22 }}
+      style={{ paddingTop: "max(env(safe-area-inset-top, 0px), 14px)" }}
     >
       <button
         type="button"
@@ -598,7 +602,10 @@ export function PushHeader({
 
 export function BottomBar({ children }: { children: ReactNode }) {
   return (
-    <div className="bg-card/80 border-border flex shrink-0 gap-3 border-t px-4 pb-7 pt-3 backdrop-blur-md">
+    <div
+      className="bg-card/80 border-border flex shrink-0 gap-3 border-t px-4 pt-3 backdrop-blur-md"
+      style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 1.75rem)" }}
+    >
       {children}
     </div>
   );

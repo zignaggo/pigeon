@@ -1,4 +1,4 @@
-import type { HistoryDirection } from "./types";
+import type { HistoryDirection, SafDir } from "./types";
 
 export type HistoryRecord = {
   id?: number;
@@ -9,6 +9,7 @@ export type HistoryRecord = {
   size: number;
   ts: number;
   path?: string;
+  uri?: SafDir;
 };
 
 const DB_NAME = "pigeon";

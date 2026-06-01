@@ -40,7 +40,11 @@ function OnboardingScreen() {
   return (
     <div
       className="bg-background text-foreground relative flex h-full flex-col items-center overflow-hidden"
-      style={{ fontFamily: "Nunito, system-ui, sans-serif" }}
+      style={{
+        fontFamily: "Nunito, system-ui, sans-serif",
+        paddingTop: "env(safe-area-inset-top, 0px)",
+        paddingBottom: "env(safe-area-inset-bottom, 0px)",
+      }}
     >
       {/* soft glow top */}
       <div

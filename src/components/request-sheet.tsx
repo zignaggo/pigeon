@@ -16,10 +16,11 @@ export function RequestSheet({ onClose }: { onClose: () => void }) {
         }}
       />
       <div
-        className="bg-card relative px-5 pb-7 pt-2.5 shadow-[0_-10px_40px_rgba(0,0,0,0.5)]"
+        className="bg-card relative px-5 pt-2.5 shadow-[0_-10px_40px_rgba(0,0,0,0.5)]"
         style={{
           borderRadius: "26px 26px 0 0",
           animation: "pmSheetUp .32s cubic-bezier(.4,0,.2,1)",
+          paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 1.75rem)",
         }}
       >
         <div className="bg-border mx-auto mb-3.5 h-[5px] w-10 rounded-[3px]" />

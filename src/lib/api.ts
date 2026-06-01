@@ -47,10 +47,16 @@ export const pickFile = () => pickPath(false);
 export const safPickDir = () => invoke<SafDir | null>("saf_pick_dir");
 
 export const safImportFile = (dir: SafDir, srcPath: string, name: string) =>
-  invoke<void>("saf_import_file", { dir, srcPath, name });
+  invoke<SafDir>("saf_import_file", { dir, srcPath, name });
 
 export const safPickFile = () =>
   invoke<{ path: string; name: string } | null>("saf_pick_file");
+
+export const safOpenFile = (uri: SafDir) =>
+  invoke<void>("saf_open_file", { uri });
+
+export const safOpenPath = (path: string) =>
+  invoke<void>("saf_open_path", { path });
 
 export type OutgoingFile = { path: string; name: string };
 

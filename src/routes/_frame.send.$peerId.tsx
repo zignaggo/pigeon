@@ -8,10 +8,16 @@ import {
   PMSectionLabel,
   PMCard,
 } from "@/components/pigeon/mobile";
+import { useFileDrop } from "@/hooks/use-file-drop";
 import { startSend } from "@/hooks/use-transfer";
 import { pickOutgoingFile, type OutgoingFile } from "@/lib/api";
 import { toUiPeer } from "@/lib/peer-map";
 import { getPeerById } from "@/lib/peers-store";
+import { cn } from "@/lib/utils";
+
+const isDesktop = () =>
+  ("__TAURI_INTERNALS__" in window || "__TAURI__" in window) &&
+  !/android|iphone|ipad/i.test(navigator.userAgent);
 
 export const Route = createFileRoute("/_frame/send/$peerId")({
   loader: ({ params }) => {
@@ -36,6 +42,11 @@ function SendScreen() {
     const picked = await pickOutgoingFile();
     if (picked) setFile(picked);
   };
+
+  const dropOver = useFileDrop((paths) => {
+    const path = paths[0];
+    setFile({ path, name: path.split(/[\\/]/).pop() || path });
+  });
 
   const send = () => {
     if (!file) return;
@@ -65,27 +76,45 @@ function SendScreen() {
       />
       <div className="pm-screen flex-1 overflow-auto p-4">
         <PMSectionLabel>Arquivo</PMSectionLabel>
-        {file ? (
-          <PMCard>
-            <div className="flex items-center gap-3 px-[15px] py-3.5">
-              <FileIcon ext={extOf(file.name)} size={36} />
-              <div className="min-w-0 flex-1">
-                <div className="text-foreground truncate text-sm font-semibold">
-                  {file.name}
-                </div>
-                <div className="text-muted-foreground mt-0.5 truncate text-[11.5px]">
-                  Pronto para enviar
+        <div
+          className={cn(
+            "rounded-[18px] transition-all",
+            dropOver && "ring-primary ring-2",
+          )}
+        >
+          {dropOver ? (
+            <PMCard className="border-primary border-dashed">
+              <div className="text-primary px-[15px] py-6 text-center text-[13px] font-semibold">
+                Solte o arquivo aqui
+              </div>
+            </PMCard>
+          ) : file ? (
+            <PMCard>
+              <div className="flex items-center gap-3 px-[15px] py-3.5">
+                <FileIcon ext={extOf(file.name)} size={36} />
+                <div className="min-w-0 flex-1">
+                  <div className="text-foreground truncate text-sm font-semibold">
+                    {file.name}
+                  </div>
+                  <div className="text-muted-foreground mt-0.5 truncate text-[11.5px]">
+                    Pronto para enviar
+                  </div>
                 </div>
               </div>
-            </div>
-          </PMCard>
-        ) : (
-          <PMCard>
-            <div className="text-muted-foreground px-[15px] py-6 text-center text-[13px]">
-              Nenhum arquivo selecionado
-            </div>
-          </PMCard>
-        )}
+            </PMCard>
+          ) : (
+            <PMCard>
+              <div className="text-muted-foreground px-[15px] py-6 text-center text-[13px]">
+                Nenhum arquivo selecionado
+                {isDesktop() && (
+                  <div className="mt-1 text-[11.5px] opacity-80">
+                    Arraste um arquivo aqui ou escolha abaixo
+                  </div>
+                )}
+              </div>
+            </PMCard>
+          )}
+        </div>
 
         <button
           type="button"
