@@ -99,7 +99,7 @@ export function Sidebar({
   const nick = getNick() ?? "";
   const peers = usePeers();
   return (
-    <div className="border-border bg-card/40 flex h-screen w-60 shrink-0 flex-col border-r">
+    <div className="border-border bg-card/40 flex h-full w-60 shrink-0 flex-col border-r">
       <div className="border-border flex items-center gap-2.5 border-b px-4 py-4">
         <PigeonAvatar
           name={initialsOf(nick || "?")}

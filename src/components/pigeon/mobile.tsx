@@ -42,7 +42,7 @@ export function PMAppBar({
         <div
           className={cn(
             "text-foreground leading-tight font-extrabold",
-            big ? "text-[28px]" : "text-[19px]",
+            big ? "text-[24px]" : "text-[19px]",
           )}
           style={{ letterSpacing: -0.6 }}
         >
@@ -64,20 +64,24 @@ export function PMIconButton({
   onClick,
   tinted = false,
   ariaLabel,
+  disabled,
 }: {
   children: ReactNode;
   onClick?: () => void;
   tinted?: boolean;
   ariaLabel?: string;
+  disabled?: boolean;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
+      disabled={disabled}
       aria-label={ariaLabel}
       className={cn(
         "border-border flex size-10 shrink-0 items-center justify-center rounded-[13px] border",
         tinted ? "bg-accent text-primary" : "bg-card text-muted-foreground",
+        "disabled:opacity-40 disabled:cursor-not-allowed"
       )}
     >
       {children}

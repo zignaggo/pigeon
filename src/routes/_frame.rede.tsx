@@ -60,6 +60,7 @@ function NetworkScreen() {
           <PMIconButton
             onClick={() => setSheet(true)}
             ariaLabel="Parear com código QR"
+            disabled
           >
             {QrIcon}
           </PMIconButton>
