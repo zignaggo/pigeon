@@ -12,6 +12,7 @@ import {
   PMPeerRow,
 } from "@/components/pigeon/mobile";
 import { RequestSheet } from "@/components/request-sheet";
+import { useNetworkInfo } from "@/hooks/use-network-info";
 import { restartDiscovery, usePeers } from "@/hooks/use-peers";
 import { getNick } from "@/lib/nick";
 import { toUiPeer } from "@/lib/peer-map";
@@ -44,6 +45,7 @@ function NetworkScreen() {
   const me = initialsOf(getNick() ?? "");
   const [sheet, setSheet] = useState(false);
   const peers = usePeers().map(toUiPeer);
+  const { data: net, refetch: refetchNet } = useNetworkInfo();
 
   return (
     <>
@@ -71,7 +73,12 @@ function NetworkScreen() {
         <PMRadarHero
           peers={peers}
           me={me}
-          onTap={() => void restartDiscovery()}
+          network={net?.ssid ?? "rede local"}
+          gateway={net?.gateway}
+          onTap={() => {
+            void restartDiscovery();
+            void refetchNet();
+          }}
         />
         <div className="mt-1.5">
           <PMSectionLabel right={`${peers.length} online`}>

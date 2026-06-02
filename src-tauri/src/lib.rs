@@ -1,5 +1,6 @@
 mod client;
 mod discovery;
+mod network;
 mod scan;
 mod server;
 
@@ -24,6 +25,11 @@ fn get_local_ip() -> Result<String, String> {
     local_ip_address::local_ip()
         .map(|ip| ip.to_string())
         .map_err(|e| format!("could not determine local IP: {e}"))
+}
+
+#[tauri::command]
+fn get_network_info() -> network::NetworkInfo {
+    network::info()
 }
 
 #[tauri::command]
@@ -312,6 +318,7 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             get_local_ip,
+            get_network_info,
             start_server,
             stop_server,
             send_file,

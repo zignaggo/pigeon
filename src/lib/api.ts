@@ -5,6 +5,10 @@ import type { SafDir } from "./types";
 
 export const getLocalIp = () => invoke<string>("get_local_ip");
 
+export type NetworkInfo = { ssid: string | null; gateway: string | null };
+
+export const getNetworkInfo = () => invoke<NetworkInfo>("get_network_info");
+
 export const getDefaultSaveDir = () => invoke<string>("default_save_dir");
 
 export const startServer = (saveDir: string) =>

@@ -436,12 +436,14 @@ export function PMTabBar({
 // ── Compact radar hero ───────────────────────────────────────
 export function PMRadarHero({
   peers = [],
-  network = "Wi-Fi Casa",
+  network = "rede local",
+  gateway,
   me = "EU",
   onTap,
 }: {
   peers?: Peer[];
   network?: string;
+  gateway?: string | null;
   me?: string;
   onTap?: () => void;
 }) {
@@ -566,7 +568,15 @@ export function PMRadarHero({
         </svg>
         <span className="text-foreground font-bold">{count} por perto</span>
         <span className="opacity-50">·</span>
-        <span style={{ fontFamily: MONO }}>{network}</span>
+        <span className="text-foreground max-w-[120px] truncate font-semibold">
+          {network}
+        </span>
+        {gateway && (
+          <>
+            <span className="opacity-50">·</span>
+            <span style={{ fontFamily: MONO }}>{gateway}</span>
+          </>
+        )}
       </div>
     </div>
   );
