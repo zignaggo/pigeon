@@ -28,8 +28,8 @@ fn get_local_ip() -> Result<String, String> {
 }
 
 #[tauri::command]
-fn get_network_info() -> network::NetworkInfo {
-    network::info()
+fn get_network_info(app: AppHandle) -> network::NetworkInfo {
+    network::info(&app)
 }
 
 #[tauri::command]

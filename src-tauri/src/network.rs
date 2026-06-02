@@ -6,14 +6,17 @@ pub struct NetworkInfo {
     pub gateway: Option<String>,
 }
 
-pub fn info() -> NetworkInfo {
+pub fn info(app: &tauri::AppHandle) -> NetworkInfo {
     #[cfg(target_os = "android")]
     {
-        let (ssid, gateway) = android::wifi_info();
+        let (ssid, gateway) =
+            std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| android::wifi_info(app)))
+                .unwrap_or((None, None));
         NetworkInfo { ssid, gateway }
     }
     #[cfg(target_os = "windows")]
     {
+        let _ = app;
         NetworkInfo {
             ssid: windows::ssid(),
             gateway: windows::gateway(),
@@ -21,6 +24,7 @@ pub fn info() -> NetworkInfo {
     }
     #[cfg(not(any(target_os = "android", target_os = "windows")))]
     {
+        let _ = app;
         NetworkInfo {
             ssid: None,
             gateway: None,
@@ -75,89 +79,107 @@ mod windows {
 mod android {
     use std::sync::atomic::{AtomicBool, Ordering};
 
-    use jni::objects::{JObject, JString, JValue};
+    use jni::objects::{JObject, JString, JValue, JValueOwned};
     use jni::JNIEnv;
+    use tauri::AppHandle;
 
     static PERM_REQUESTED: AtomicBool = AtomicBool::new(false);
     const FINE_LOCATION: &str = "android.permission.ACCESS_FINE_LOCATION";
 
-    pub fn wifi_info() -> (Option<String>, Option<String>) {
+    pub fn wifi_info(app: &AppHandle) -> (Option<String>, Option<String>) {
         let ctx = ndk_context::android_context();
         let Ok(vm) = (unsafe { jni::JavaVM::from_raw(ctx.vm().cast()) }) else {
             return (None, None);
         };
-        let Ok(mut env) = vm.attach_current_thread() else {
+        let Ok(mut guard) = vm.attach_current_thread() else {
             return (None, None);
         };
+        let env = &mut *guard;
         let context = unsafe { JObject::from_raw(ctx.context().cast()) };
 
-        if !location_granted(&mut env, &context) {
-            if !PERM_REQUESTED.swap(true, Ordering::SeqCst) {
-                let _ = request_location(&mut env, &context);
-            }
-            return (None, gateway(&mut env, &context));
+        let granted = location_granted(env, &context);
+        if !granted && !PERM_REQUESTED.swap(true, Ordering::SeqCst) {
+            request_permission_on_main(app);
         }
 
-        (ssid(&mut env, &context), gateway(&mut env, &context))
+        let ssid = if granted { read_ssid(env, &context) } else { None };
+        let gateway = read_gateway(env, &context);
+        (ssid, gateway)
+    }
+
+    fn take_obj<'a>(
+        env: &mut JNIEnv,
+        result: jni::errors::Result<JValueOwned<'a>>,
+    ) -> Option<JObject<'a>> {
+        match result {
+            Ok(value) => value.l().ok(),
+            Err(_) => {
+                let _ = env.exception_clear();
+                None
+            }
+        }
+    }
+
+    fn take_int(env: &mut JNIEnv, result: jni::errors::Result<JValueOwned<'_>>) -> Option<i32> {
+        match result {
+            Ok(value) => value.i().ok(),
+            Err(_) => {
+                let _ = env.exception_clear();
+                None
+            }
+        }
     }
 
     fn location_granted(env: &mut JNIEnv, context: &JObject) -> bool {
-        env.new_string(FINE_LOCATION)
-            .ok()
-            .and_then(|perm| {
-                env.call_method(
-                    context,
-                    "checkSelfPermission",
-                    "(Ljava/lang/String;)I",
-                    &[(&perm).into()],
-                )
-                .ok()?
-                .i()
-                .ok()
-            })
-            .map(|code| code == 0)
-            .unwrap_or(false)
-    }
-
-    fn request_location(env: &mut JNIEnv, context: &JObject) -> Result<(), jni::errors::Error> {
-        let perm = env.new_string(FINE_LOCATION)?;
-        let string_class = env.find_class("java/lang/String")?;
-        let array = env.new_object_array(1, string_class, &perm)?;
-        env.call_method(
+        let Ok(perm) = env.new_string(FINE_LOCATION) else {
+            let _ = env.exception_clear();
+            return false;
+        };
+        let result = env.call_method(
             context,
-            "requestPermissions",
-            "([Ljava/lang/String;I)V",
-            &[(&array).into(), JValue::Int(7913)],
-        )?;
-        Ok(())
+            "checkSelfPermission",
+            "(Ljava/lang/String;)I",
+            &[(&perm).into()],
+        );
+        take_int(env, result) == Some(0)
     }
 
     fn wifi_manager<'a>(env: &mut JNIEnv<'a>, context: &JObject) -> Option<JObject<'a>> {
-        let service = env.new_string("wifi").ok()?;
-        env.call_method(
+        let service = env
+            .new_string("wifi")
+            .map_err(|_| {
+                let _ = env.exception_clear();
+            })
+            .ok()?;
+        let result = env.call_method(
             context,
             "getSystemService",
             "(Ljava/lang/String;)Ljava/lang/Object;",
             &[(&service).into()],
-        )
-        .ok()?
-        .l()
-        .ok()
+        );
+        take_obj(env, result)
     }
 
-    fn ssid(env: &mut JNIEnv, context: &JObject) -> Option<String> {
+    fn read_ssid(env: &mut JNIEnv, context: &JObject) -> Option<String> {
         let wifi = wifi_manager(env, context)?;
-        let info = env
-            .call_method(&wifi, "getConnectionInfo", "()Landroid/net/wifi/WifiInfo;", &[])
-            .ok()?
-            .l()
-            .ok()?;
-        let raw = env
-            .call_method(&info, "getSSID", "()Ljava/lang/String;", &[])
-            .ok()?
-            .l()
-            .ok()?;
-        let value: String = env.get_string(&JString::from(raw)).ok()?.into();
+        let info_res =
+            env.call_method(&wifi, "getConnectionInfo", "()Landroid/net/wifi/WifiInfo;", &[]);
+        let info = take_obj(env, info_res)?;
+        if info.is_null() {
+            return None;
+        }
+        let ssid_res = env.call_method(&info, "getSSID", "()Ljava/lang/String;", &[]);
+        let raw = take_obj(env, ssid_res)?;
+        if raw.is_null() {
+            return None;
+        }
+        let value: String = match env.get_string(&JString::from(raw)) {
+            Ok(s) => s.into(),
+            Err(_) => {
+                let _ = env.exception_clear();
+                return None;
+            }
+        };
         let value = value.trim_matches('"').to_string();
         if value.is_empty() || value == "<unknown ssid>" || value == "0x" {
             None
@@ -166,18 +188,59 @@ mod android {
         }
     }
 
-    fn gateway(env: &mut JNIEnv, context: &JObject) -> Option<String> {
+    fn read_gateway(env: &mut JNIEnv, context: &JObject) -> Option<String> {
         let wifi = wifi_manager(env, context)?;
-        let dhcp = env
-            .call_method(&wifi, "getDhcpInfo", "()Landroid/net/DhcpInfo;", &[])
-            .ok()?
-            .l()
-            .ok()?;
-        let raw = env.get_field(&dhcp, "gateway", "I").ok()?.i().ok()?;
+        let dhcp_res = env.call_method(&wifi, "getDhcpInfo", "()Landroid/net/DhcpInfo;", &[]);
+        let dhcp = take_obj(env, dhcp_res)?;
+        if dhcp.is_null() {
+            return None;
+        }
+        let field = env.get_field(&dhcp, "gateway", "I");
+        let raw = take_int(env, field)?;
         if raw == 0 {
             return None;
         }
         let bytes = (raw as u32).to_le_bytes();
         Some(format!("{}.{}.{}.{}", bytes[0], bytes[1], bytes[2], bytes[3]))
+    }
+
+    fn request_permission_on_main(app: &AppHandle) {
+        let _ = app.run_on_main_thread(|| {
+            let _ = std::panic::catch_unwind(|| {
+                let ctx = ndk_context::android_context();
+                let Ok(vm) = (unsafe { jni::JavaVM::from_raw(ctx.vm().cast()) }) else {
+                    return;
+                };
+                let Ok(mut guard) = vm.attach_current_thread() else {
+                    return;
+                };
+                let env = &mut *guard;
+                let context = unsafe { JObject::from_raw(ctx.context().cast()) };
+
+                let Ok(perm) = env.new_string(FINE_LOCATION) else {
+                    let _ = env.exception_clear();
+                    return;
+                };
+                let Ok(string_class) = env.find_class("java/lang/String") else {
+                    let _ = env.exception_clear();
+                    return;
+                };
+                let Ok(array) = env.new_object_array(1, string_class, &perm) else {
+                    let _ = env.exception_clear();
+                    return;
+                };
+                if env
+                    .call_method(
+                        &context,
+                        "requestPermissions",
+                        "([Ljava/lang/String;I)V",
+                        &[(&array).into(), JValue::Int(7913)],
+                    )
+                    .is_err()
+                {
+                    let _ = env.exception_clear();
+                }
+            });
+        });
     }
 }
