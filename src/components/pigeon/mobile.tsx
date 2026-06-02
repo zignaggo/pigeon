@@ -435,22 +435,23 @@ export function PMTabBar({
 
 // ── Compact radar hero ───────────────────────────────────────
 export function PMRadarHero({
-  count = 5,
+  peers = [],
   network = "Wi-Fi Casa",
   me = "EU",
 }: {
-  count?: number;
+  peers?: Peer[];
   network?: string;
   me?: string;
 }) {
-  const dots: { a: number; r: number; tint: Tint }[] = [
-    { a: -32, r: 0.62, tint: "coral" },
-    { a: 38, r: 0.86, tint: "sun" },
-    { a: 108, r: 0.58, tint: "mint" },
-    { a: 162, r: 0.9, tint: "sky" },
-    { a: 232, r: 0.7, tint: "lilac" },
+  const slots: { a: number; r: number }[] = [
+    { a: -32, r: 0.62 },
+    { a: 38, r: 0.86 },
+    { a: 108, r: 0.58 },
+    { a: 162, r: 0.9 },
+    { a: 232, r: 0.7 },
   ];
-  const letters = ["A", "B", "C", "D", "E"];
+  const shown = peers.slice(0, slots.length);
+  const count = peers.length;
   return (
     <div className="relative h-80 shrink-0 overflow-hidden">
       {/* glow */}
@@ -483,14 +484,15 @@ export function PMRadarHero({
         />
       ))}
       {/* peer dots */}
-      {dots.slice(0, count).map((d, i) => {
-        const rad = (d.a * Math.PI) / 180;
-        const dist = 58 + d.r * 70;
+      {shown.map((peer, i) => {
+        const slot = slots[i];
+        const rad = (slot.a * Math.PI) / 180;
+        const dist = 58 + slot.r * 70;
         const x = Math.cos(rad) * dist;
         const y = Math.sin(rad) * dist;
         return (
           <div
-            key={d.tint}
+            key={peer.id}
             className="absolute left-1/2 top-[54%]"
             style={{
               transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`,
@@ -504,11 +506,11 @@ export function PMRadarHero({
               <div
                 className="border-card flex size-[30px] items-center justify-center rounded-[9px] border-[1.5px] text-xs font-bold shadow-[0_4px_10px_rgba(0,0,0,0.25)]"
                 style={{
-                  background: `color-mix(in oklab, var(${TINT_VAR[d.tint]}) 22%, transparent)`,
-                  color: `var(${TINT_VAR[d.tint]})`,
+                  background: `color-mix(in oklab, var(${TINT_VAR[peer.tint]}) 22%, transparent)`,
+                  color: `var(${TINT_VAR[peer.tint]})`,
                 }}
               >
-                {letters[i]}
+                {peer.mono}
               </div>
             </div>
           </div>

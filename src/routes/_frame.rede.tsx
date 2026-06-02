@@ -68,7 +68,7 @@ function NetworkScreen() {
       />
       <IpAddress />
       <div className="pm-screen flex-1 overflow-auto px-4 pb-5">
-        <PMRadarHero count={peers.length} me={me} />
+        <PMRadarHero peers={peers} me={me} />
         <div className="mt-1.5">
           <PMSectionLabel right={`${peers.length} online`}>
             Dispositivos
