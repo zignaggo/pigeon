@@ -12,6 +12,11 @@ export function setSaveDir(path: string): void {
   localStorage.setItem(SAVE_DIR_KEY, path);
 }
 
+export function hasSaveDir(): boolean {
+  if (/android/i.test(navigator.userAgent)) return getSafDir() != null;
+  return getSaveDir() != null;
+}
+
 export function getSafDir(): SafDir | null {
   const raw = localStorage.getItem(SAF_DIR_KEY);
   if (!raw) return null;

@@ -21,6 +21,7 @@ async function fetchHistory(): Promise<HistoryGroup[]> {
   for (const r of records) {
     const day = dayLabel(r.ts);
     const item = {
+      id: r.id,
       dir: r.dir,
       name: r.name,
       ext: r.ext,
@@ -30,6 +31,7 @@ async function fetchHistory(): Promise<HistoryGroup[]> {
         minute: "2-digit",
       }),
       size: formatBytes(r.size),
+      status: r.status ?? "done",
     };
     const last = groups[groups.length - 1];
     if (last && last.day === day) last.items.push(item);

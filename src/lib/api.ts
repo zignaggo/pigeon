@@ -58,6 +58,9 @@ export const safOpenFile = (uri: SafDir) =>
 export const safOpenPath = (path: string) =>
   invoke<void>("saf_open_path", { path });
 
+export const safOpenDir = (dir: SafDir) =>
+  invoke<void>("saf_open_dir", { dir });
+
 export type OutgoingFile = { path: string; name: string };
 
 export async function pickOutgoingFile(): Promise<OutgoingFile | null> {

@@ -9,7 +9,8 @@ import { useEffect, useSyncExternalStore } from "react";
 
 import { safImportFile } from "@/lib/api";
 import { fileNameOf } from "@/lib/format";
-import { addHistory } from "@/lib/history-db";
+import { addHistory, updateHistory } from "@/lib/history-db";
+import type { HistoryRecord } from "@/lib/history-db";
 import { addLog } from "@/lib/log-store";
 import { getPeerByIp } from "@/lib/peers-store";
 import { getSafDir, getSoundEnabled } from "@/lib/receive-config";
@@ -25,6 +26,7 @@ import type { ReceiveState } from "@/lib/receive-store";
 import { playReceiveChime } from "@/lib/sound";
 
 let resetTimer: ReturnType<typeof setTimeout> | null = null;
+let activeHistory: Promise<number> | null = null;
 
 async function ensureNotificationPermission(): Promise<boolean> {
   try {
@@ -57,7 +59,22 @@ export function useReceive(): void {
     const subs = [
       listen<{ name: string; size: number; from: string }>(
         "receive-started",
-        (e) => receiveStarted(e.payload.name, peerLabel(e.payload.from), e.payload.size),
+        (e) => {
+          const from = peerLabel(e.payload.from);
+          receiveStarted(e.payload.name, from, e.payload.size);
+          activeHistory = addHistory({
+            dir: "in",
+            name: e.payload.name,
+            ext: extOf(e.payload.name),
+            peer: from,
+            size: e.payload.size,
+            ts: Date.now(),
+            status: "receiving",
+          });
+          void activeHistory
+            .then(() => queryClient.invalidateQueries({ queryKey: ["history"] }))
+            .catch(() => {});
+        },
       ),
       listen<{ name: string; received: number; total: number }>(
         "receive-progress",
@@ -77,28 +94,41 @@ export function useReceive(): void {
           });
         }
 
-        const base = {
-          dir: "in" as const,
-          name,
-          ext: extOf(name),
-          peer: snap.from || "rede",
-          size: snap.total,
-          ts: Date.now(),
-        };
         const saf = isAndroid() ? getSafDir() : null;
+        const pending = activeHistory;
+        activeHistory = null;
 
         void (async () => {
+          const patch: Partial<Omit<HistoryRecord, "id">> = {
+            status: "done",
+            name,
+            size: snap.total,
+          };
           if (saf) {
             try {
-              const uri = await safImportFile(saf, e.payload.path, name);
-              await addHistory({ ...base, uri });
+              patch.uri = await safImportFile(saf, e.payload.path, name);
               addLog("event", "receive", `salvo na pasta: ${name}`);
             } catch (err) {
               addLog("error", "receive", `mover p/ pasta falhou: ${String(err)}`);
-              await addHistory({ ...base, path: e.payload.path });
+              patch.path = e.payload.path;
             }
           } else {
-            await addHistory({ ...base, path: e.payload.path });
+            patch.path = e.payload.path;
+          }
+
+          const id = pending ? await pending.catch(() => null) : null;
+          if (id != null) {
+            await updateHistory(id, patch);
+          } else {
+            await addHistory({
+              dir: "in",
+              ext: extOf(name),
+              peer: snap.from || "rede",
+              ts: Date.now(),
+              name,
+              size: snap.total,
+              ...patch,
+            });
           }
           void queryClient.invalidateQueries({ queryKey: ["history"] });
           void queryClient.invalidateQueries({ queryKey: ["received"] });

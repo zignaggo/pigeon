@@ -1,17 +1,29 @@
+import { useNavigate } from "@tanstack/react-router";
+
 import { useReceiveState } from "@/hooks/use-receive";
 import { formatBytes } from "@/lib/format";
+import { receiveReset } from "@/lib/receive-store";
 
 const MONO = '"Geist Mono", ui-monospace, monospace';
 
 export function ReceiveIndicator() {
   const r = useReceiveState();
+  const navigate = useNavigate();
   if (r.status === "idle") return null;
 
   const done = r.status === "done";
   const pct = r.total > 0 ? Math.min(100, (r.received / r.total) * 100) : 0;
 
   return (
-    <div className="bg-card/95 border-border absolute bottom-[140px] left-3 right-16 z-30 flex items-center gap-3 rounded-2xl border px-3 py-2.5 shadow-[0_8px_22px_rgba(0,0,0,0.35)] backdrop-blur md:bottom-[88px] md:left-auto md:right-5 md:w-80">
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={() => navigate({ to: "/historico" })}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") navigate({ to: "/historico" });
+      }}
+      className="bg-card/95 border-border absolute bottom-[140px] left-3 right-16 z-30 flex cursor-pointer items-center gap-3 rounded-2xl border px-3 py-2.5 shadow-[0_8px_22px_rgba(0,0,0,0.35)] backdrop-blur md:bottom-[88px] md:left-auto md:right-5 md:w-80"
+    >
       <div
         className="flex size-7 shrink-0 items-center justify-center rounded-full"
         style={{
@@ -56,6 +68,19 @@ export function ReceiveIndicator() {
           {done ? `de ${r.from}` : `${formatBytes(r.received)} / ${formatBytes(r.total)} · de ${r.from}`}
         </div>
       </div>
+      <button
+        type="button"
+        aria-label="Fechar"
+        onClick={(e) => {
+          e.stopPropagation();
+          receiveReset();
+        }}
+        className="text-muted-foreground hover:text-foreground -mr-1 flex size-7 shrink-0 items-center justify-center self-start rounded-full"
+      >
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+          <path d="M3.5 3.5l7 7M10.5 3.5l-7 7" />
+        </svg>
+      </button>
     </div>
   );
 }

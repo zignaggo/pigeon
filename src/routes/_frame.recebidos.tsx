@@ -3,10 +3,11 @@ import { createFileRoute } from "@tanstack/react-router";
 import { FileIcon } from "@/components/pigeon/atoms";
 import { PMAppBar, PMCard, PMSectionLabel } from "@/components/pigeon/mobile";
 import { useReceivedFiles } from "@/hooks/use-received";
-import { openPath, revealPath, safOpenFile, safOpenPath } from "@/lib/api";
+import { openPath, revealPath, safOpenDir, safOpenPath } from "@/lib/api";
 import { formatBytes } from "@/lib/format";
 import { addLog } from "@/lib/log-store";
 import type { HistoryRecord } from "@/lib/history-db";
+import { getSafDir } from "@/lib/receive-config";
 
 const MONO = '"Geist Mono", ui-monospace, monospace';
 
@@ -26,23 +27,31 @@ function when(ts: number): string {
 const isAndroid = /android/i.test(navigator.userAgent);
 
 function open(file: HistoryRecord) {
-  if (file.uri) {
-    void safOpenFile(file.uri).catch((e) =>
-      addLog("warn", "receive", `abrir falhou: ${String(e)}`),
-    );
+  const warn = (e: unknown) =>
+    addLog("warn", "receive", `abrir falhou: ${String(e)}`);
+
+  if (isAndroid) {
+    const saf = getSafDir();
+    if (saf) {
+      void safOpenDir(saf).catch(warn);
+      return;
+    }
+    if (file.path) {
+      void safOpenPath(file.path).catch(warn);
+      return;
+    }
+    addLog("warn", "receive", "sem pasta para abrir");
     return;
   }
+
   if (file.path) {
     const path = file.path;
-    const action = isAndroid
-      ? safOpenPath(path)
-      : revealPath(path).catch(() => openPath(path));
-    void action.catch((e) =>
-      addLog("warn", "receive", `abrir falhou: ${String(e)}`),
-    );
+    void revealPath(path)
+      .catch(() => openPath(path))
+      .catch(warn);
     return;
   }
-  addLog("warn", "receive", "sem caminho/uri para abrir");
+  addLog("warn", "receive", "sem caminho para abrir");
 }
 
 function Item({ file, isLast }: { file: HistoryRecord; isLast?: boolean }) {

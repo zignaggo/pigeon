@@ -12,7 +12,7 @@ import {
   PMPeerRow,
 } from "@/components/pigeon/mobile";
 import { RequestSheet } from "@/components/request-sheet";
-import { usePeers } from "@/hooks/use-peers";
+import { restartDiscovery, usePeers } from "@/hooks/use-peers";
 import { getNick } from "@/lib/nick";
 import { toUiPeer } from "@/lib/peer-map";
 import { initialsOf } from "@/lib/utils";
@@ -68,7 +68,11 @@ function NetworkScreen() {
       />
       <IpAddress />
       <div className="pm-screen flex-1 overflow-auto px-4 pb-5">
-        <PMRadarHero peers={peers} me={me} />
+        <PMRadarHero
+          peers={peers}
+          me={me}
+          onTap={() => void restartDiscovery()}
+        />
         <div className="mt-1.5">
           <PMSectionLabel right={`${peers.length} online`}>
             Dispositivos

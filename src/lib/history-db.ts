@@ -1,4 +1,4 @@
-import type { HistoryDirection, SafDir } from "./types";
+import type { HistoryDirection, HistoryStatus, SafDir } from "./types";
 
 export type HistoryRecord = {
   id?: number;
@@ -8,6 +8,7 @@ export type HistoryRecord = {
   peer: string;
   size: number;
   ts: number;
+  status?: HistoryStatus;
   path?: string;
   uri?: SafDir;
 };
@@ -29,12 +30,34 @@ function openDb(): Promise<IDBDatabase> {
   });
 }
 
-export async function addHistory(entry: Omit<HistoryRecord, "id">): Promise<void> {
+export async function addHistory(entry: Omit<HistoryRecord, "id">): Promise<number> {
+  const db = await openDb();
+  try {
+    return await new Promise<number>((resolve, reject) => {
+      const tx = db.transaction(STORE, "readwrite");
+      const req = tx.objectStore(STORE).add(entry);
+      req.onsuccess = () => resolve(req.result as number);
+      tx.onerror = () => reject(tx.error);
+    });
+  } finally {
+    db.close();
+  }
+}
+
+export async function updateHistory(
+  id: number,
+  patch: Partial<Omit<HistoryRecord, "id">>,
+): Promise<void> {
   const db = await openDb();
   try {
     await new Promise<void>((resolve, reject) => {
       const tx = db.transaction(STORE, "readwrite");
-      tx.objectStore(STORE).add(entry);
+      const store = tx.objectStore(STORE);
+      const get = store.get(id);
+      get.onsuccess = () => {
+        const current = get.result as HistoryRecord | undefined;
+        if (current) store.put({ ...current, ...patch, id });
+      };
       tx.oncomplete = () => resolve();
       tx.onerror = () => reject(tx.error);
     });

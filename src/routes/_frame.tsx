@@ -17,6 +17,7 @@ import { useReceive } from "@/hooks/use-receive";
 import { useServer } from "@/hooks/use-server";
 import { useTransferEvents } from "@/hooks/use-transfer";
 import { getNick } from "@/lib/nick";
+import { hasSaveDir } from "@/lib/receive-config";
 
 const TAB_PATH = {
   rede: "/rede",
@@ -27,7 +28,7 @@ const TAB_PATH = {
 
 export const Route = createFileRoute("/_frame")({
   beforeLoad: () => {
-    if (!getNick()) throw redirect({ to: "/onboarding" });
+    if (!getNick() || !hasSaveDir()) throw redirect({ to: "/onboarding" });
   },
   component: FrameLayout,
 });

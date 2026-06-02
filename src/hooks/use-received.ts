@@ -7,6 +7,8 @@ export function useReceivedFiles() {
   return useQuery({
     queryKey: ["received"],
     queryFn: async (): Promise<HistoryRecord[]> =>
-      (await getHistory()).filter((r) => r.dir === "in"),
+      (await getHistory()).filter(
+        (r) => r.dir === "in" && r.status !== "receiving",
+      ),
   });
 }

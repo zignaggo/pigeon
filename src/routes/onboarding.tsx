@@ -7,14 +7,24 @@ import {
   DeviceGlyph,
   StatusDot,
 } from "@/components/pigeon/atoms";
+import { pickDirectory, safPickDir } from "@/lib/api";
 import { getNick, setNick } from "@/lib/nick";
+import {
+  getSafDir,
+  getSaveDir,
+  hasSaveDir,
+  setSafDir,
+  setSaveDir,
+} from "@/lib/receive-config";
 import { initialsOf } from "@/lib/utils";
 
 const MONO = '"Geist Mono", ui-monospace, monospace';
 
+const isAndroid = /android/i.test(navigator.userAgent);
+
 export const Route = createFileRoute("/onboarding")({
   beforeLoad: () => {
-    if (getNick()) throw redirect({ to: "/rede" });
+    if (getNick() && hasSaveDir()) throw redirect({ to: "/rede" });
   },
   component: OnboardingScreen,
 });
@@ -23,14 +33,34 @@ function OnboardingScreen() {
   const navigate = useNavigate();
   const [draft, setDraft] = useState("");
   const ref = useRef<HTMLInputElement>(null);
+  const [folder, setFolder] = useState<string | null>(() => {
+    if (isAndroid) return getSafDir() ? "Pasta escolhida" : null;
+    return getSaveDir();
+  });
 
   useEffect(() => {
     const id = setTimeout(() => ref.current?.focus(), 350);
     return () => clearTimeout(id);
   }, []);
 
-  const ok = draft.trim().length >= 1;
-  const ini = ok ? initialsOf(draft) : "·";
+  const pickFolder = async () => {
+    if (isAndroid) {
+      const dir = await safPickDir();
+      if (dir) {
+        setSafDir(dir);
+        setFolder("Pasta escolhida");
+      }
+      return;
+    }
+    const path = await pickDirectory();
+    if (path) {
+      setSaveDir(path);
+      setFolder(path);
+    }
+  };
+
+  const ok = draft.trim().length >= 1 && folder != null;
+  const ini = draft.trim().length >= 1 ? initialsOf(draft) : "·";
   const go = () => {
     if (!ok) return;
     setNick(draft.trim());
@@ -136,6 +166,73 @@ function OnboardingScreen() {
               </span>
             </span>
           </div>
+
+          <label
+            htmlFor="folder"
+            className="text-muted-foreground mt-6 pl-1 text-xs font-bold uppercase tracking-[0.6px]"
+          >
+            Onde salvar os arquivos recebidos?
+          </label>
+          <button
+            id="folder"
+            type="button"
+            onClick={() => void pickFolder()}
+            className="bg-card mt-2 flex w-full items-center gap-3 rounded-2xl border-[1.5px] px-4 py-3.5 text-left transition-colors"
+            style={{ borderColor: folder ? "var(--primary)" : "var(--border)" }}
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="var(--primary)"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="shrink-0"
+            >
+              <path d="M2 4.5A1.5 1.5 0 0 1 3.5 3h3l1.5 1.5h4.5A1.5 1.5 0 0 1 14 6v6.5A1.5 1.5 0 0 1 12.5 14h-9A1.5 1.5 0 0 1 2 12.5z" />
+            </svg>
+            <span
+              className={
+                "min-w-0 flex-1 truncate text-[15px] font-semibold " +
+                (folder ? "text-foreground" : "text-muted-foreground")
+              }
+            >
+              {folder ?? "Escolher pasta…"}
+            </span>
+            {folder ? (
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="var(--primary)"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="shrink-0"
+              >
+                <path d="M3.5 8.5l3 3 6-7" />
+              </svg>
+            ) : (
+              <svg
+                width="8"
+                height="14"
+                viewBox="0 0 8 14"
+                className="text-muted-foreground shrink-0 opacity-50"
+              >
+                <path
+                  d="M1 1l6 6-6 6"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  fill="none"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            )}
+          </button>
         </div>
 
         {/* bottom CTA */}

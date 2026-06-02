@@ -203,6 +203,16 @@ async fn saf_open_path(app: AppHandle, path: String) -> Result<(), String> {
 }
 
 #[cfg(target_os = "android")]
+#[tauri::command]
+async fn saf_open_dir(app: AppHandle, dir: FileUri) -> Result<(), String> {
+    app.android_fs_async()
+        .file_opener()
+        .open_dir(&dir)
+        .await
+        .map_err(|e| e.to_string())
+}
+
+#[cfg(target_os = "android")]
 #[derive(serde::Serialize)]
 struct PickedFile {
     path: String,
@@ -271,6 +281,12 @@ async fn saf_open_path() -> Result<(), String> {
     Err("SAF disponível apenas no Android".into())
 }
 
+#[cfg(not(target_os = "android"))]
+#[tauri::command]
+async fn saf_open_dir() -> Result<(), String> {
+    Err("SAF disponível apenas no Android".into())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -311,6 +327,7 @@ pub fn run() {
             saf_pick_file,
             saf_open_file,
             saf_open_path,
+            saf_open_dir,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

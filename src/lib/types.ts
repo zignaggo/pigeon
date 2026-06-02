@@ -9,13 +9,17 @@ export type DiscoveredPeer = {
 
 export type HistoryDirection = "out" | "in";
 
+export type HistoryStatus = "receiving" | "done";
+
 export type HistoryItem = {
+  id?: number;
   dir: HistoryDirection;
   name: string;
   ext: string;
   peer: string;
   time: string;
   size: string;
+  status: HistoryStatus;
 };
 
 export type HistoryGroup = { day: string; items: HistoryItem[] };

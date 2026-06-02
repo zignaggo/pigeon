@@ -438,10 +438,12 @@ export function PMRadarHero({
   peers = [],
   network = "Wi-Fi Casa",
   me = "EU",
+  onTap,
 }: {
   peers?: Peer[];
   network?: string;
   me?: string;
+  onTap?: () => void;
 }) {
   const slots: { a: number; r: number }[] = [
     { a: -32, r: 0.62 },
@@ -453,7 +455,23 @@ export function PMRadarHero({
   const shown = peers.slice(0, slots.length);
   const count = peers.length;
   return (
-    <div className="relative h-80 shrink-0 overflow-hidden">
+    <div
+      role={onTap ? "button" : undefined}
+      tabIndex={onTap ? 0 : undefined}
+      aria-label={onTap ? "Atualizar dispositivos" : undefined}
+      onClick={onTap}
+      onKeyDown={
+        onTap
+          ? (e) => {
+              if (e.key === "Enter" || e.key === " ") onTap();
+            }
+          : undefined
+      }
+      className={cn(
+        "relative h-80 shrink-0 overflow-hidden",
+        onTap && "cursor-pointer",
+      )}
+    >
       {/* glow */}
       <div
         className="absolute left-1/2 top-[54%] size-[320px] -translate-x-1/2 -translate-y-1/2 rounded-full"

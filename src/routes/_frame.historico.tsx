@@ -3,6 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { FileIcon } from "@/components/pigeon/atoms";
 import { PMAppBar, PMSectionLabel, PMCard } from "@/components/pigeon/mobile";
 import { useHistory } from "@/hooks/use-history";
+import { useReceiveState } from "@/hooks/use-receive";
 import type { HistoryItem } from "@/lib/types";
 
 const MONO = '"Geist Mono", ui-monospace, monospace';
@@ -11,8 +12,17 @@ export const Route = createFileRoute("/_frame/historico")({
   component: HistoryScreen,
 });
 
-function Item({ it, isLast }: { it: HistoryItem; isLast?: boolean }) {
+function Item({
+  it,
+  isLast,
+  pct,
+}: {
+  it: HistoryItem;
+  isLast?: boolean;
+  pct?: number;
+}) {
   const out = it.dir === "out";
+  const receiving = it.status === "receiving";
   const color = out ? "var(--primary)" : "var(--chart-3)";
   return (
     <div
@@ -47,24 +57,47 @@ function Item({ it, isLast }: { it: HistoryItem; isLast?: boolean }) {
                 <path d="M6 2v8M2.5 6.5L6 10l3.5-3.5" />
               )}
             </svg>
-            {out ? "Enviado para" : "Recebido de"}
+            {receiving ? "Recebendo de" : out ? "Enviado para" : "Recebido de"}
           </span>
           <span className="truncate">{it.peer}</span>
         </div>
+        {receiving && (
+          <div className="bg-muted mt-2 h-1 overflow-hidden rounded-sm">
+            <div
+              className="h-full rounded-sm"
+              style={{
+                width: `${pct ?? 0}%`,
+                background: "var(--chart-3)",
+                transition: "width .15s linear",
+              }}
+            />
+          </div>
+        )}
       </div>
       <div className="shrink-0 text-right">
-        <div
-          className="text-muted-foreground text-xs"
-          style={{ fontFamily: MONO }}
-        >
-          {it.time}
-        </div>
-        <div
-          className="text-muted-foreground mt-0.5 text-[11px]"
-          style={{ fontFamily: MONO }}
-        >
-          {it.size}
-        </div>
+        {receiving ? (
+          <div
+            className="text-[11.5px] font-semibold"
+            style={{ fontFamily: MONO, color: "var(--chart-3)" }}
+          >
+            {Math.round(pct ?? 0)}%
+          </div>
+        ) : (
+          <>
+            <div
+              className="text-muted-foreground text-xs"
+              style={{ fontFamily: MONO }}
+            >
+              {it.time}
+            </div>
+            <div
+              className="text-muted-foreground mt-0.5 text-[11px]"
+              style={{ fontFamily: MONO }}
+            >
+              {it.size}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
@@ -72,6 +105,9 @@ function Item({ it, isLast }: { it: HistoryItem; isLast?: boolean }) {
 
 function HistoryScreen() {
   const { data: groups = [], isLoading } = useHistory();
+  const live = useReceiveState();
+  const livePct =
+    live.total > 0 ? Math.min(100, (live.received / live.total) * 100) : 0;
 
   return (
     <>
@@ -90,9 +126,10 @@ function HistoryScreen() {
               <PMCard>
                 {grp.items.map((it, i) => (
                   <Item
-                    key={`${it.name}-${it.time}`}
+                    key={it.id ?? `${it.name}-${it.time}`}
                     it={it}
                     isLast={i === grp.items.length - 1}
+                    pct={it.status === "receiving" ? livePct : undefined}
                   />
                 ))}
               </PMCard>
