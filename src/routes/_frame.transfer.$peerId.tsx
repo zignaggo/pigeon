@@ -41,20 +41,39 @@ function TransferScreen() {
 
   const done = t.status === "done";
   const failed = t.status === "error";
+  const rejected = t.status === "rejected";
+  const awaiting = t.status === "awaiting";
+  const stalled = failed || rejected;
   const pct =
     t.total > 0 ? Math.min(100, (t.sent / t.total) * 100) : done ? 100 : 0;
 
-  const eyebrow = done ? "Concluído" : failed ? "Falha" : "Enviando para";
+  const eyebrow = done
+    ? "Concluído"
+    : rejected
+      ? "Recusado"
+      : failed
+        ? "Falha"
+        : awaiting
+          ? "Aguardando"
+          : "Enviando para";
   const headline = done
     ? "Enviado!"
+    : rejected
+      ? "Recusado"
+      : failed
+        ? "Falhou"
+        : awaiting
+          ? "Aguardando aprovação…"
+          : `${Math.round(pct)}%`;
+  const subline = rejected
+    ? "O destinatário recusou o envio"
     : failed
-      ? "Falhou"
-      : `${Math.round(pct)}%`;
-  const subline = failed
-    ? (t.error ?? "erro desconhecido")
-    : done
-      ? formatBytes(t.total)
-      : `${formatBytes(t.sent)} / ${formatBytes(t.total)}`;
+      ? (t.error ?? "erro desconhecido")
+      : awaiting
+        ? "Pedido enviado ao destinatário"
+        : done
+          ? formatBytes(t.total)
+          : `${formatBytes(t.sent)} / ${formatBytes(t.total)}`;
 
   return (
     <div
@@ -78,7 +97,7 @@ function TransferScreen() {
       />
       <div className="pm-screen flex-1 overflow-auto p-4">
         <PMCard className="px-5 py-[22px] text-center">
-          <RingBig pct={failed ? 100 : pct} done={done} />
+          <RingBig pct={stalled ? 100 : pct} done={done} />
           <div
             className="text-foreground mt-3.5 text-[30px] font-extrabold"
             style={{ letterSpacing: -1 }}
@@ -87,7 +106,7 @@ function TransferScreen() {
           </div>
           <div
             className="text-muted-foreground mt-1 text-[13px] break-words"
-            style={{ fontFamily: MONO, color: failed ? "#ff7a7a" : undefined }}
+            style={{ fontFamily: MONO, color: stalled ? "#ff7a7a" : undefined }}
           >
             {subline}
           </div>
@@ -95,8 +114,8 @@ function TransferScreen() {
             <div
               className="h-full rounded"
               style={{
-                width: `${failed ? 100 : pct}%`,
-                background: failed
+                width: `${stalled ? 100 : pct}%`,
+                background: stalled
                   ? "#ff7a7a"
                   : done
                     ? "var(--chart-3)"
@@ -117,7 +136,7 @@ function TransferScreen() {
                   ext: extOf(t.name),
                   size: formatBytes(t.total),
                 }}
-                progress={failed ? undefined : pct}
+                progress={stalled ? undefined : pct}
                 state={done ? "done" : "sending"}
                 isLast
               />
@@ -126,12 +145,12 @@ function TransferScreen() {
         )}
       </div>
 
-      {(done || failed) && (
+      {(done || stalled) && (
         <BottomBar>
           <button
             type="button"
             onClick={() =>
-              failed
+              stalled
                 ? navigate({ to: "/send/$peerId", params: { peerId: peer.id } })
                 : navigate({ to: "/rede" })
             }
@@ -141,7 +160,7 @@ function TransferScreen() {
                 "0 8px 20px color-mix(in oklab, var(--primary) 40%, transparent)",
             }}
           >
-            {failed ? "Tentar de novo" : "Concluir"}
+            {stalled ? "Tentar de novo" : "Concluir"}
           </button>
         </BottomBar>
       )}

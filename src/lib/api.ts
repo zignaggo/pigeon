@@ -16,6 +16,9 @@ export const startServer = (saveDir: string) =>
 
 export const stopServer = () => invoke<void>("stop_server");
 
+export const respondToRequest = (id: number, accept: boolean) =>
+  invoke<void>("respond_to_request", { id, accept });
+
 export const sendFile = (targetIp: string, filePath: string) =>
   invoke<void>("send_file", { targetIp, filePath });
 

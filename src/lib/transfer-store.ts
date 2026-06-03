@@ -1,4 +1,10 @@
-export type TransferStatus = "idle" | "sending" | "done" | "error";
+export type TransferStatus =
+  | "idle"
+  | "awaiting"
+  | "sending"
+  | "done"
+  | "rejected"
+  | "error";
 
 export type TransferState = {
   status: TransferStatus;
@@ -46,7 +52,11 @@ export function transferBegin(intent: {
   path: string;
   name: string;
 }): void {
-  set({ ...intent, status: "sending", sent: 0, total: 0, error: null });
+  set({ ...intent, status: "awaiting", sent: 0, total: 0, error: null });
+}
+
+export function transferAwaiting(): void {
+  set({ status: "awaiting" });
 }
 
 export function transferProgress(sent: number, total: number): void {
@@ -55,6 +65,10 @@ export function transferProgress(sent: number, total: number): void {
 
 export function transferDone(): void {
   set({ status: "done" });
+}
+
+export function transferRejected(): void {
+  set({ status: "rejected" });
 }
 
 export function transferError(error: string): void {

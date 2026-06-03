@@ -1,5 +1,4 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
 
 import { PigeonAvatar, StatusDot } from "@/components/pigeon/atoms";
 import { IpAddress } from "@/components/pigeon/ip-address";
@@ -11,7 +10,6 @@ import {
   PMCard,
   PMPeerRow,
 } from "@/components/pigeon/mobile";
-import { RequestSheet } from "@/components/request-sheet";
 import { useNetworkInfo } from "@/hooks/use-network-info";
 import { restartDiscovery, usePeers } from "@/hooks/use-peers";
 import { getNick } from "@/lib/nick";
@@ -43,7 +41,6 @@ export const Route = createFileRoute("/_frame/rede")({
 function NetworkScreen() {
   const navigate = useNavigate();
   const me = initialsOf(getNick() ?? "");
-  const [sheet, setSheet] = useState(false);
   const peers = usePeers().map(toUiPeer);
   const { data: net, refetch: refetchNet } = useNetworkInfo();
 
@@ -59,11 +56,7 @@ function NetworkScreen() {
           </>
         }
         right={
-          <PMIconButton
-            onClick={() => setSheet(true)}
-            ariaLabel="Parear com código QR"
-            disabled
-          >
+          <PMIconButton ariaLabel="Parear com código QR" disabled>
             {QrIcon}
           </PMIconButton>
         }
@@ -125,8 +118,6 @@ function NetworkScreen() {
           </div>
         )}
       </div>
-
-      {sheet && <RequestSheet onClose={() => setSheet(false)} />}
     </>
   );
 }

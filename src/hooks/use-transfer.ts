@@ -9,10 +9,12 @@ import { getPeerById } from "@/lib/peers-store";
 import {
   getTransfer,
   subscribe,
+  transferAwaiting,
   transferBegin,
   transferDone,
   transferError,
   transferProgress,
+  transferRejected,
 } from "@/lib/transfer-store";
 import type { TransferState } from "@/lib/transfer-store";
 
@@ -25,6 +27,11 @@ export function useTransferEvents(): void {
 
   useEffect(() => {
     const subs = [
+      listen("send-awaiting", () => transferAwaiting()),
+      listen<{ name: string; target: string }>("send-rejected", (e) => {
+        transferRejected();
+        addLog("event", "transfer", `recusado: ${e.payload.name}`);
+      }),
       listen<{ bytes_sent: number; total: number }>("send-progress", (e) =>
         transferProgress(e.payload.bytes_sent, e.payload.total),
       ),
@@ -60,10 +67,9 @@ export async function startSend(
   name: string,
 ): Promise<void> {
   transferBegin({ peerId, ip, path, name });
-  addLog("info", "transfer", `enviando ${name} → ${ip}`);
+  addLog("info", "transfer", `solicitando envio de ${name} → ${ip}`);
   try {
     await sendFile(ip, path);
-    transferDone();
   } catch (e) {
     transferError(String(e));
     addLog("error", "transfer", `envio falhou: ${String(e)}`);

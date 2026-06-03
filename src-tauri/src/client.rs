@@ -21,6 +21,47 @@ struct SendDone {
     target: String,
 }
 
+#[derive(Clone, Serialize)]
+struct SendStatus {
+    name: String,
+    target: String,
+}
+
+async fn await_decision(
+    app: &AppHandle,
+    stream: &mut TcpStream,
+    name: &str,
+    target: &str,
+) -> Result<bool, String> {
+    let _ = app.emit(
+        "send-awaiting",
+        SendStatus {
+            name: name.to_string(),
+            target: target.to_string(),
+        },
+    );
+
+    let mut decision = [0u8; 1];
+    match tokio::time::timeout(Duration::from_secs(120), stream.read_exact(&mut decision)).await {
+        Ok(Ok(_)) => {}
+        Ok(Err(e)) => return Err(format!("aguardando aprovação: {e}")),
+        Err(_) => return Err("tempo de aprovação esgotado".to_string()),
+    }
+
+    if decision[0] != 1 {
+        let _ = app.emit(
+            "send-rejected",
+            SendStatus {
+                name: name.to_string(),
+                target: target.to_string(),
+            },
+        );
+        return Ok(false);
+    }
+
+    Ok(true)
+}
+
 #[derive(serde::Serialize)]
 struct Header<'a> {
     name: &'a str,
@@ -63,6 +104,11 @@ pub async fn send_file(app: AppHandle, target_ip: String, file_path: String) -> 
         .write_all(&header_bytes)
         .await
         .map_err(|e| format!("write header: {e}"))?;
+
+    if !await_decision(&app, &mut stream, &file_name, &addr).await? {
+        log::info!("send to {addr} rejected");
+        return Ok(());
+    }
 
     let mut file = File::open(&file_path)
         .await
@@ -143,6 +189,11 @@ pub async fn send_data(
         .write_all(&header_bytes)
         .await
         .map_err(|e| format!("write header: {e}"))?;
+
+    if !await_decision(&app, &mut stream, &name, &addr).await? {
+        log::info!("send to {addr} rejected");
+        return Ok(());
+    }
 
     let mut sent: u64 = 0;
     let mut last_emit: u64 = 0;

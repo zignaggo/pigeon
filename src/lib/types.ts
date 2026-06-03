@@ -31,6 +31,12 @@ export type Progress = { sent: number; total: number };
 // pro backend; o frontend não inspeciona seu conteúdo.
 export type SafDir = Record<string, unknown>;
 
+export type ReceiveRequestPayload = {
+  id: number;
+  name: string;
+  size: number;
+  from: string;
+};
 export type ReceiveStartedPayload = {
   name: string;
   size: number;
@@ -39,6 +45,7 @@ export type ReceiveStartedPayload = {
 export type ReceiveDonePayload = { path: string };
 export type SendProgressPayload = { bytes_sent: number; total: number };
 export type SendDonePayload = { name: string; target: string };
+export type SendStatusPayload = { name: string; target: string };
 export type ErrorPayload = { message: string };
 
 export type PigeonContextValue = {

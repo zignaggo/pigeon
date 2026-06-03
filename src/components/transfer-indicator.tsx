@@ -8,9 +8,10 @@ export function TransferIndicator() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
 
-  if (t.status !== "sending") return null;
+  if (t.status !== "sending" && t.status !== "awaiting") return null;
   if (pathname.startsWith("/transfer")) return null;
 
+  const awaiting = t.status === "awaiting";
   const pct = t.total > 0 ? Math.min(100, (t.sent / t.total) * 100) : 0;
 
   return (
@@ -36,31 +37,36 @@ export function TransferIndicator() {
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <span className="text-foreground min-w-0 flex-1 truncate text-[13px] font-semibold">
-            Enviando {t.name}
+            {awaiting ? "Aguardando aprovação" : `Enviando ${t.name}`}
           </span>
-          <span
-            className="text-muted-foreground shrink-0 text-[11.5px]"
-            style={{ fontFamily: '"Geist Mono", ui-monospace, monospace' }}
-          >
-            {Math.round(pct)}%
-          </span>
+          {!awaiting && (
+            <span
+              className="text-muted-foreground shrink-0 text-[11.5px]"
+              style={{ fontFamily: '"Geist Mono", ui-monospace, monospace' }}
+            >
+              {Math.round(pct)}%
+            </span>
+          )}
         </div>
         <div className="bg-muted mt-1.5 h-1 overflow-hidden rounded-sm">
           <div
             className="h-full rounded-sm"
             style={{
-              width: `${pct}%`,
+              width: `${awaiting ? 100 : pct}%`,
               background:
                 "linear-gradient(90deg, var(--primary), var(--chart-2))",
               transition: "width .15s linear",
+              opacity: awaiting ? 0.4 : 1,
             }}
           />
         </div>
         <div
-          className="text-muted-foreground mt-1 text-[10.5px]"
+          className="text-muted-foreground mt-1 truncate text-[10.5px]"
           style={{ fontFamily: '"Geist Mono", ui-monospace, monospace' }}
         >
-          {formatBytes(t.sent)} / {formatBytes(t.total)}
+          {awaiting
+            ? t.name
+            : `${formatBytes(t.sent)} / ${formatBytes(t.total)}`}
         </div>
       </div>
     </button>

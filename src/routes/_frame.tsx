@@ -10,10 +10,17 @@ import { DebugOverlay } from "@/components/devtools/debug-overlay";
 import { PMTabBar, type Tab } from "@/components/pigeon/mobile";
 import { Sidebar } from "@/components/pigeon/sidebar";
 import { ReceiveIndicator } from "@/components/receive-indicator";
+import { RequestSheet } from "@/components/request-sheet";
 import { TransferIndicator } from "@/components/transfer-indicator";
 import { useDebugSetup } from "@/hooks/use-debug";
 import { useDiscovery } from "@/hooks/use-peers";
 import { useReceive } from "@/hooks/use-receive";
+import {
+  acceptRequest,
+  declineRequest,
+  useIncomingRequest,
+  useReceiveRequest,
+} from "@/hooks/use-receive-request";
 import { useServer } from "@/hooks/use-server";
 import { useTransferEvents } from "@/hooks/use-transfer";
 import { getNick } from "@/lib/nick";
@@ -39,6 +46,8 @@ function FrameLayout() {
   useDebugSetup();
   useTransferEvents();
   useReceive();
+  useReceiveRequest();
+  const request = useIncomingRequest();
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const active: Tab = pathname.startsWith("/historico")
@@ -79,6 +88,13 @@ function FrameLayout() {
         </div>
         <TransferIndicator />
         <ReceiveIndicator />
+        {request && (
+          <RequestSheet
+            request={request}
+            onAccept={() => void acceptRequest(request.id)}
+            onDecline={() => void declineRequest(request.id)}
+          />
+        )}
         <DebugOverlay />
       </div>
     </div>

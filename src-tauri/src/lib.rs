@@ -49,6 +49,16 @@ async fn stop_server(state: State<'_, AppState>) -> Result<(), String> {
 }
 
 #[tauri::command]
+async fn respond_to_request(
+    state: State<'_, AppState>,
+    id: u64,
+    accept: bool,
+) -> Result<(), String> {
+    state.server.respond(id, accept).await;
+    Ok(())
+}
+
+#[tauri::command]
 async fn send_file(app: AppHandle, target_ip: String, file_path: String) -> Result<(), String> {
     client::send_file(app, target_ip, file_path).await
 }
@@ -321,6 +331,7 @@ pub fn run() {
             get_network_info,
             start_server,
             stop_server,
+            respond_to_request,
             send_file,
             send_data,
             start_discovery,

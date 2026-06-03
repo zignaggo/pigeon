@@ -1,12 +1,15 @@
+use std::collections::HashMap;
 use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
+use std::time::Duration;
 
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Emitter};
 use tokio::fs::File;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpListener;
-use tokio::sync::Mutex;
+use tokio::sync::{oneshot, Mutex};
 use tokio::task::JoinHandle;
 
 pub const PORT: u16 = 7878;
@@ -15,6 +18,14 @@ pub const PORT: u16 = 7878;
 struct Header {
     name: String,
     size: u64,
+}
+
+#[derive(Clone, Serialize)]
+struct ReceiveRequest {
+    id: u64,
+    name: String,
+    size: u64,
+    from: String,
 }
 
 #[derive(Clone, Serialize)]
@@ -45,11 +56,19 @@ struct ErrorEvent {
 pub struct ServerState {
     running: Mutex<bool>,
     task: Mutex<Option<JoinHandle<()>>>,
+    pending: Mutex<HashMap<u64, oneshot::Sender<bool>>>,
+    next_id: AtomicU64,
 }
 
 impl ServerState {
     pub fn new() -> Self {
         Self::default()
+    }
+
+    pub async fn respond(&self, id: u64, accept: bool) {
+        if let Some(tx) = self.pending.lock().await.remove(&id) {
+            let _ = tx.send(accept);
+        }
     }
 }
 
@@ -90,15 +109,18 @@ pub async fn start(
 
     let app_clone = app.clone();
     let save_dir_clone = save_dir.clone();
+    let state_clone = state.clone();
     let task = tokio::spawn(async move {
         loop {
             match listener.accept().await {
                 Ok((stream, peer)) => {
                     let app_inner = app_clone.clone();
                     let save_dir_inner = save_dir_clone.clone();
+                    let state_inner = state_clone.clone();
                     tokio::spawn(async move {
                         if let Err(e) = handle_connection(
                             app_inner.clone(),
+                            state_inner,
                             save_dir_inner,
                             stream,
                             peer.to_string(),
@@ -145,6 +167,7 @@ pub async fn stop(state: Arc<ServerState>) -> Result<(), String> {
 
 async fn handle_connection(
     app: AppHandle,
+    state: Arc<ServerState>,
     save_dir: PathBuf,
     mut stream: tokio::net::TcpStream,
     peer: String,
@@ -177,6 +200,38 @@ async fn handle_connection(
     );
 
     let safe_name = sanitize_name(&header.name);
+
+    let id = state.next_id.fetch_add(1, Ordering::Relaxed);
+    let (tx, rx) = oneshot::channel::<bool>();
+    state.pending.lock().await.insert(id, tx);
+
+    let _ = app.emit(
+        "receive-request",
+        ReceiveRequest {
+            id,
+            name: safe_name.clone(),
+            size: header.size,
+            from: peer.clone(),
+        },
+    );
+
+    let accepted = matches!(
+        tokio::time::timeout(Duration::from_secs(90), rx).await,
+        Ok(Ok(true))
+    );
+    state.pending.lock().await.remove(&id);
+
+    if !accepted {
+        let _ = stream.write_all(&[0u8]).await;
+        log::info!("request {id} from {peer} declined");
+        return Ok(());
+    }
+
+    stream
+        .write_all(&[1u8])
+        .await
+        .map_err(|e| format!("write decision: {e}"))?;
+
     let dest_path = unique_path(&save_dir, &safe_name);
 
     let _ = app.emit(
