@@ -480,6 +480,16 @@
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
         </button>
       </div>
+      <div class="image-zoom" id="imageZoom" aria-hidden="true">
+        <button class="zoom-backdrop" id="zoomBackdrop" type="button" tabindex="-1" aria-label="Fechar zoom"></button>
+        <figure class="zoom-frame" role="dialog" aria-modal="true" aria-label="Imagem ampliada do fluxo">
+          <button class="zoom-close" id="zoomClose" type="button" aria-label="Fechar zoom">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
+          </button>
+          <img id="zoomImage" alt="" />
+          <figcaption id="zoomCaption"></figcaption>
+        </figure>
+      </div>
     </main>
 
     <script>
@@ -488,7 +498,13 @@
       const progress = document.getElementById("progressBar");
       const prev = document.getElementById("prev");
       const next = document.getElementById("next");
+      const zoom = document.getElementById("imageZoom");
+      const zoomImage = document.getElementById("zoomImage");
+      const zoomCaption = document.getElementById("zoomCaption");
+      const zoomClose = document.getElementById("zoomClose");
+      const zoomBackdrop = document.getElementById("zoomBackdrop");
       let index = 0;
+      let zoomOpen = false;
 
       function formatSlideNumber(value) {
         return String(value).padStart(2, "0");
@@ -520,6 +536,14 @@
       }
 
       function handleKeyboard(event) {
+        if (zoomOpen) {
+          if (event.key === "Escape") {
+            event.preventDefault();
+            closeZoom();
+          }
+          return;
+        }
+
         const forwardKeys = ["ArrowRight", "PageDown", " "];
         const backwardKeys = ["ArrowLeft", "PageUp", "Backspace"];
 
@@ -547,8 +571,40 @@
         }
       }
 
+      function openZoom(image) {
+        zoomOpen = true;
+        zoomImage.src = image.currentSrc || image.src;
+        zoomImage.alt = image.alt;
+        zoomCaption.textContent = image.alt;
+        zoom.classList.add("open");
+        zoom.setAttribute("aria-hidden", "false");
+        document.body.classList.add("zooming");
+        zoomClose.focus();
+      }
+
+      function closeZoom() {
+        zoomOpen = false;
+        zoom.classList.remove("open");
+        zoom.setAttribute("aria-hidden", "true");
+        document.body.classList.remove("zooming");
+        zoomImage.removeAttribute("src");
+        zoomCaption.textContent = "";
+      }
+
+      document.querySelectorAll(".focus-slide .device-shot img").forEach((image) => {
+        const button = document.createElement("button");
+        button.className = "zoom-trigger";
+        button.type = "button";
+        button.setAttribute("aria-label", `Ampliar imagem: ${image.alt}`);
+        image.parentNode.insertBefore(button, image);
+        button.appendChild(image);
+        button.addEventListener("click", () => openZoom(image));
+      });
+
       prev.addEventListener("click", () => show(index - 1));
       next.addEventListener("click", () => show(index + 1));
+      zoomClose.addEventListener("click", closeZoom);
+      zoomBackdrop.addEventListener("click", closeZoom);
       document.addEventListener("keydown", handleKeyboard, true);
       window.addEventListener("hashchange", () => show(indexFromHash(), false));
 
