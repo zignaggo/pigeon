@@ -1,0 +1,558 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pigeon - Apresentacao</title>
+    <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg" />
+    <link rel="alternate icon" type="image/png" href="./assets/logo192.png" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="deck" aria-label="Slides do projeto Pigeon">
+      <section class="stage">
+        <div class="slides" id="slides">
+          <article class="slide active" data-kicker="slide 1">
+            <div class="slide-head">
+              <span>O que consiste o projeto</span>
+              <strong>01</strong>
+            </div>
+            <div class="hero-grid">
+              <section class="intro-copy">
+                <div class="logo big" aria-hidden="true">
+                  <svg viewBox="0 0 32 32">
+                    <path d="M28 4L14 18M28 4l-10 24-4-10-10-4z" />
+                  </svg>
+                </div>
+                <h1>Transferencia local, direta e sem servidor central.</h1>
+                <p>
+                  O Pigeon conecta dispositivos na mesma rede para enviar
+                  arquivos sem internet, usando descoberta automática e canal
+                  ponto a ponto.
+                </p>
+                <div class="metric-row">
+                  <div class="metric"><span>LAN</span><strong>offline</strong></div>
+                  <div class="metric"><span>modelo</span><strong>P2P</strong></div>
+                  <div class="metric"><span>alvos</span><strong>Android + Windows</strong></div>
+                </div>
+              </section>
+              <section class="radar-card" aria-label="Dispositivos na rede">
+                <div class="radar">
+                  <span class="ring r1"></span>
+                  <span class="ring r2"></span>
+                  <span class="ring r3"></span>
+                  <div class="node me">EU</div>
+                  <div class="node n1">PC</div>
+                  <div class="node n2">MB</div>
+                  <div class="node n3">TB</div>
+                </div>
+                <div class="flow-strip">
+                  <div><b>Encontrar</b><span>UDP</span></div>
+                  <div><b>Enviar</b><span>TCP</span></div>
+                  <div><b>Salvar</b><span>bytes completos</span></div>
+                </div>
+              </section>
+            </div>
+          </article>
+
+          <article class="slide architecture-slide" data-kicker="slide 2">
+            <div class="slide-head">
+              <span>Arquitetura</span>
+              <strong>02</strong>
+            </div>
+            <div class="architecture-layout">
+              <section class="diagram-card network-arch-card refined-network-card" aria-label="Imagem da arquitetura">
+                <svg class="network-arch-svg refined-network-svg" viewBox="0 0 900 520" role="img" aria-label="Arquitetura de rede local com descoberta UDP e transferência TCP">
+                  <defs>
+                    <marker id="netArrow" markerWidth="12" markerHeight="12" refX="9" refY="3" orient="auto">
+                      <path d="M0,0 L0,6 L9,3 z" fill="#f4836a" />
+                    </marker>
+                    <marker id="udpArrow" markerWidth="12" markerHeight="12" refX="9" refY="3" orient="auto">
+                      <path d="M0,0 L0,6 L9,3 z" fill="#8fbed1" />
+                    </marker>
+                    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+                      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#000000" flood-opacity="0.28" />
+                    </filter>
+                    <linearGradient id="routerTop" x1="0" x2="1" y1="0" y2="1">
+                      <stop offset="0" stop-color="#8fdef4" />
+                      <stop offset="1" stop-color="#4ab4dc" />
+                    </linearGradient>
+                  </defs>
+                  <rect class="network-bg-panel" x="32" y="34" width="836" height="452" rx="34" />
+                  <g class="network-map" transform="translate(450 260) scale(0.86) translate(-450 -260)">
+                    <path class="network-cloud" d="M52 426c-62 0-110-41-110-94 0-40 28-75 69-90 9-98 94-173 198-173 43 0 83 12 116 35 48-62 124-100 211-100 127 0 234 83 260 197 71 11 124 62 124 123 0 66-60 116-138 116H52Z" />
+                    <path class="network-cloud-accent" d="M675 64c55 32 96 86 113 151M70 426c56 24 126 24 184 0" />
+
+                    <path class="udp-path left" d="M400 176C332 132 263 140 205 208" />
+                    <path class="udp-path right" d="M500 176c68-44 137-36 195 32" />
+                    <path class="tcp-path" d="M252 356C346 426 552 426 648 356" />
+                    <path class="uplink left" d="M205 318V230h120" />
+                    <path class="uplink right" d="M695 318V230H575" />
+
+                    <image class="router-image" href="./assets/router.png" x="314" y="104" width="272" height="192" preserveAspectRatio="xMidYMid meet" filter="url(#softShadow)" />
+
+                    <g class="device-card left-device" transform="translate(86 286)" filter="url(#softShadow)">
+                      <rect width="190" height="112" rx="24" />
+                      <circle class="device-avatar" cx="54" cy="54" r="34" />
+                      <text class="device-initial" x="54" y="64" text-anchor="middle">A</text>
+                      <rect class="phone-shell" x="122" y="26" width="36" height="60" rx="8" />
+                      <rect class="phone-screen" x="130" y="35" width="20" height="35" rx="3" />
+                      <circle class="phone-home" cx="140" cy="79" r="3" />
+                      <text class="device-name" x="26" y="100">Android</text>
+                    </g>
+
+                    <g class="device-card right-device" transform="translate(624 286)" filter="url(#softShadow)">
+                      <rect width="190" height="112" rx="24" />
+                      <circle class="device-avatar" cx="54" cy="54" r="34" />
+                      <text class="device-initial" x="54" y="64" text-anchor="middle">W</text>
+                      <rect class="laptop-screen" x="114" y="31" width="54" height="36" rx="5" />
+                      <path class="laptop-base" d="M104 78h74l11 13H93Z" />
+                      <text class="device-name" x="24" y="100">Windows</text>
+                    </g>
+
+                    <g class="protocol-chip tcp-chip">
+                      <rect x="384" y="434" width="132" height="42" rx="14" />
+                      <text x="450" y="461" text-anchor="middle">TCP 7878</text>
+                    </g>
+
+                  </g>
+                </svg>
+              </section>
+              <aside class="tech-panel">
+                <div class="tech-grid">
+                  <div class="tech">
+                    <div class="tech-logo react-logo" aria-hidden="true">
+                      <img src="./assets/react.png" alt="" />
+                    </div>
+                    <span class="tech-name">React</span>
+                    <strong>SPA</strong>
+                  </div>
+                  <div class="tech">
+                    <div class="tech-logo tauri-logo" aria-hidden="true">
+                      <img src="./assets/tauri.png" alt="" />
+                    </div>
+                    <span class="tech-name">Tauri 2</span>
+                    <strong class="grid-cols-2">shell nativa</strong>
+                  </div>
+                  <div class="tech">
+                    <div class="tech-logo rust-logo" aria-hidden="true">
+                      <img src="./assets/rust.png" alt="" />
+                    </div>
+                    <span class="tech-name">Rust</span>
+                    <strong>rede</strong>
+                  </div>
+                  <div class="tech">
+                    <div class="tech-logo tailwind-logo" aria-hidden="true">
+                      <img src="./assets/tailwind.png" alt="" />
+                    </div>
+                    <span class="tech-name">Tailwind v4</span>
+                    <strong>UI</strong>
+                  </div>
+                </div>
+                <div class="protocol-row">
+                  <div><b>UDP</b><span>7879</span></div>
+                  <div><b>TCP</b><span>7878</span></div>
+                  <div><b>JSON</b><span>header</span></div>
+                </div>
+              </aside>
+            </div>
+          </article>
+
+          <article class="slide" data-kicker="slide 3">
+            <div class="slide-head">
+              <span>Design e testes</span>
+              <strong>03</strong>
+            </div>
+            <div class="person-layout">
+              <section class="talk-points">
+                <div class="avatar sun">DS</div>
+                <h2>Interface validada por estados</h2>
+                <div class="point"><b>Interface</b><span>radar, listas, abas e fluxo mobile-first</span></div>
+                <div class="point"><b>Testes</b><span>estados vazios, navegação e feedback visual</span></div>
+                <div class="point"><b>Pesquisa</b><span>apps de compartilhamento local e UX de proximidade</span></div>
+              </section>
+              <section class="visual-wall">
+                <div class="phone small">
+                  <div class="phone-top"><span class="avatar mini coral">EU</span><b>Por perto</b></div>
+                  <div class="mini-radar"></div>
+                  <div class="peer-row"><span class="avatar mini sun">PC</span><b>Notebook</b><i>online</i></div>
+                  <div class="peer-row"><span class="avatar mini sky">MB</span><b>Celular</b><i>online</i></div>
+                </div>
+                <div class="test-stack">
+                  <div><b>Contraste</b><span>tema escuro</span></div>
+                  <div><b>Responsivo</b><span>mobile + desktop</span></div>
+                  <div><b>Estados</b><span>loading, vazio, erro</span></div>
+                </div>
+              </section>
+            </div>
+          </article>
+
+          <article class="slide" data-kicker="slide 4">
+            <div class="slide-head">
+              <span>POC com Tauri</span>
+              <strong>04</strong>
+            </div>
+            <div class="person-layout">
+              <section class="talk-points">
+                <div class="avatar coral">PC</div>
+                <h2>React conectado ao Rust</h2>
+                <div class="point"><b>Prova de conceito</b><span>React rodando dentro do shell Tauri 2</span></div>
+                <div class="point"><b>Bridge</b><span>comandos do front chamando Rust async</span></div>
+                <div class="point"><b>Alvos</b><span>mesmo núcleo para Android e Windows</span></div>
+              </section>
+              <section class="poc-card">
+                <div class="target-row">
+                  <div class="target">Web</div>
+                  <div class="target active">Tauri</div>
+                  <div class="target">Android</div>
+                </div>
+                <div class="pipeline">
+                  <span>Vite</span><i></i><span>invoke</span><i></i><span>Rust</span>
+                </div>
+                <div class="code-card">
+                  <span>start_discovery(nick, device_id)</span>
+                  <span>send_file(ip, path, name)</span>
+                  <span>emit("peers", snapshot)</span>
+                </div>
+              </section>
+            </div>
+          </article>
+
+          <article class="slide" data-kicker="slide 5">
+            <div class="slide-head">
+              <span>Descoberta de dispositivos</span>
+              <strong>05</strong>
+            </div>
+            <div class="discovery-layout">
+              <section class="talk-points compact">
+                <div class="avatar sky">NW</div>
+                <h2>Identificar dispositivos</h2>
+                <div class="packet-card">
+                  <b>PGN1 hello</b>
+                  <span>device_id</span>
+                  <span>nick</span>
+                  <span>ip</span>
+                  <span>port</span>
+                  <span>platform</span>
+                </div>
+              </section>
+              <section class="mode-tables">
+                <table>
+                  <caption>Multicast</caption>
+                  <tbody>
+                    <tr><th>Destino</th><td>239.255.42.99</td></tr>
+                    <tr><th>Porta</th><td>UDP 7879</td></tr>
+                    <tr><th>Ciclo</th><td>hello a cada 3s</td></tr>
+                    <tr><th>Forca</th><td>baixo custo</td></tr>
+                    <tr><th>Risco</th><td>Wi-Fi pode filtrar</td></tr>
+                  </tbody>
+                </table>
+                <table>
+                  <caption>Varredura</caption>
+                  <tbody>
+                    <tr><th>Destino</th><td>unicast /24</td></tr>
+                    <tr><th>Porta</th><td>UDP 7879</td></tr>
+                    <tr><th>Ciclo</th><td>primeiros N IPs</td></tr>
+                    <tr><th>Forca</th><td>dispensa multicast</td></tr>
+                    <tr><th>Risco</th><td>range limitado</td></tr>
+                  </tbody>
+                </table>
+              </section>
+            </div>
+          </article>
+
+          <article class="slide" data-kicker="slide 6">
+            <div class="slide-head">
+              <span>Transferência e armazenamento</span>
+              <strong>06</strong>
+            </div>
+            <div class="person-layout">
+              <section class="talk-points">
+                <div class="avatar mint">FS</div>
+                <div class="point"><b>Canal</b><span>TCP direto para o IP descoberto</span></div>
+                <div class="point"><b>Persistência</b><span>pasta configurada e histórico local</span></div>
+                <div class="point"><b>Integridade</b><span>tamanho prefixado e leitura exata dos bytes</span></div>
+              </section>
+              <section class="transfer-card">
+                <div class="transfer-line">
+                  <span class="avatar mini coral">OR</span>
+                  <div class="bar"><i></i></div>
+                  <span class="avatar mini mint">DS</span>
+                </div>
+                <div class="packet-grid">
+                  <div><b>4 bytes</b><span>tamanho header</span></div>
+                  <div><b>JSON</b><span>nome + size</span></div>
+                  <div class="wide"><b>payload</b><span>conteudo do arquivo</span></div>
+                </div>
+                <div class="file-row"><span class="file-icon">PDF</span><b>relatório-final.pdf</b><i>64 KB por chunk</i></div>
+              </section>
+            </div>
+          </article>
+
+          <article class="slide focus-slide" data-kicker="slide 7.1">
+            <div class="slide-head">
+              <span>Fluxo de transferência</span>
+              <strong>07.1</strong>
+            </div>
+            <div class="focus-mode">
+              <aside class="focus-copy">
+                <span class="eyebrow">modo foco</span>
+                <h2>Dispositivos na mesma rede</h2>
+                <p>O mobile fica visível e o desktop escuta a rede local para aparecer como destino.</p>
+                <div class="focus-meta"><b>UDP</b><span>descoberta</span></div>
+              </aside>
+              <section class="focus-stage">
+                <div class="device-shot mobile-shot active">
+                  <img src="assets/mobile-1.jpeg" width="720" height="1600" alt="Mobile procurando dispositivos na rede local" />
+                </div>
+                <div class="transfer-lane idle" aria-hidden="true"><span></span></div>
+                <div class="device-shot desktop-shot active">
+                  <img src="assets/pigeon-desktop-1.png" width="1092" height="711" alt="Desktop aberto na tela Por perto sem dispositivos encontrados" />
+                </div>
+              </section>
+              <div class="flow-steps" aria-label="Etapas do fluxo">
+                <span class="active">rede</span><span>peer</span><span>arquivo</span><span>aprovação</span><span>concluído</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="slide focus-slide" data-kicker="slide 7.2">
+            <div class="slide-head">
+              <span>Fluxo de transferência</span>
+              <strong>07.2</strong>
+            </div>
+            <div class="focus-mode">
+              <aside class="focus-copy">
+                <span class="eyebrow">descoberta</span>
+                <h2>Desktop encontrado</h2>
+                <p>O mobile identifica o PC-ZIG e passa a oferecer o envio direto para o dispositivo.</p>
+                <div class="focus-meta"><b>1 online</b><span>rede local</span></div>
+              </aside>
+              <section class="focus-stage">
+                <div class="device-shot mobile-shot active">
+                  <img src="assets/mobile-2.jpeg" width="720" height="1600" alt="Mobile mostrando PC-ZIG encontrado por perto" />
+                </div>
+                <div class="transfer-lane discovery" aria-hidden="true"><span></span></div>
+                <div class="device-shot desktop-shot active">
+                  <img src="assets/pigeon-desktop-2.png" width="1091" height="711" alt="Desktop mostrando o mobile Zig na lista de dispositivos" />
+                </div>
+              </section>
+              <div class="flow-steps" aria-label="Etapas do fluxo">
+                <span class="done">rede</span><span class="active">peer</span><span>arquivo</span><span>aprovação</span><span>concluído</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="slide focus-slide" data-kicker="slide 7.3">
+            <div class="slide-head">
+              <span>Fluxo de transferência</span>
+              <strong>07.3</strong>
+            </div>
+            <div class="focus-mode">
+              <aside class="focus-copy">
+                <span class="eyebrow">seleção</span>
+                <h2>Escolha do arquivo</h2>
+                <p>Depois de tocar no desktop, o mobile abre o fluxo de seleção e prepara o canal de envio.</p>
+                <div class="focus-meta"><b>TCP 7878</b><span>canal direto</span></div>
+              </aside>
+              <section class="focus-stage">
+                <div class="device-shot mobile-shot active">
+                  <img src="assets/mobile-3.jpeg" width="720" height="1600" alt="Mobile na tela de seleção de arquivo para PC-ZIG" />
+                </div>
+                <div class="transfer-lane preparing" aria-hidden="true"><span></span></div>
+                <div class="device-shot desktop-shot muted-shot">
+                  <img src="assets/pigeon-desktop-2.png" width="1091" height="711" alt="Desktop aguardando solicitação do mobile" />
+                </div>
+              </section>
+              <div class="flow-steps" aria-label="Etapas do fluxo">
+                <span class="done">rede</span><span class="done">peer</span><span class="active">arquivo</span><span>aprovação</span><span>concluído</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="slide focus-slide" data-kicker="slide 7.4">
+            <div class="slide-head">
+              <span>Fluxo de transferência</span>
+              <strong>07.4</strong>
+            </div>
+            <div class="focus-mode">
+              <aside class="focus-copy">
+                <span class="eyebrow">arquivo pronto</span>
+                <h2>Envio iniciado pelo mobile</h2>
+                <p>O app monta o cabeçalho com metadados e envia a solicitação para o desktop aceitar.</p>
+                <div class="focus-meta"><b>JSON header</b><span>nome + tamanho</span></div>
+              </aside>
+              <section class="focus-stage">
+                <div class="device-shot mobile-shot active">
+                  <img src="assets/mobile-4.jpeg" width="720" height="1600" alt="Mobile com PDF selecionado e pronto para enviar" />
+                </div>
+                <div class="transfer-lane sending" aria-hidden="true"><span></span></div>
+                <div class="device-shot desktop-shot muted-shot">
+                  <img src="assets/pigeon-desktop-2.png" width="1091" height="711" alt="Desktop com o mobile detectado antes do pedido de conexão" />
+                </div>
+              </section>
+              <div class="flow-steps" aria-label="Etapas do fluxo">
+                <span class="done">rede</span><span class="done">peer</span><span class="active">arquivo</span><span>aprovação</span><span>concluído</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="slide focus-slide" data-kicker="slide 7.5">
+            <div class="slide-head">
+              <span>Fluxo de transferência</span>
+              <strong>07.5</strong>
+            </div>
+            <div class="focus-mode">
+              <aside class="focus-copy">
+                <span class="eyebrow">confirmação</span>
+                <h2>Desktop aprova o recebimento</h2>
+                <p>O mobile aguarda enquanto o desktop mostra o pedido, o arquivo e a ação de aceitar.</p>
+                <div class="focus-meta"><b>handshake</b><span>pedido de conexão</span></div>
+              </aside>
+              <section class="focus-stage">
+                <div class="device-shot mobile-shot active">
+                  <img src="assets/mobile-5.jpeg" width="720" height="1600" alt="Mobile aguardando aprovação do destinatário" />
+                </div>
+                <div class="transfer-lane waiting" aria-hidden="true"><span></span></div>
+                <div class="device-shot desktop-shot active">
+                  <img src="assets/pigeon-desktop-3.png" width="1096" height="715" alt="Desktop mostrando pedido de conexão para aceitar e receber o PDF" />
+                </div>
+              </section>
+              <div class="flow-steps" aria-label="Etapas do fluxo">
+                <span class="done">rede</span><span class="done">peer</span><span class="done">arquivo</span><span class="active">aprovação</span><span>concluído</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="slide focus-slide" data-kicker="slide 7.6">
+            <div class="slide-head">
+              <span>Fluxo de transferência</span>
+              <strong>07.6</strong>
+            </div>
+            <div class="focus-mode">
+              <aside class="focus-copy">
+                <span class="eyebrow">transferência concluída</span>
+                <h2>Arquivo salvo no desktop</h2>
+                <p>Após a transferência, o mobile confirma o envio e o desktop lista o PDF em recebidos.</p>
+                <div class="focus-meta"><b>3.6 MB</b><span>salvo localmente</span></div>
+              </aside>
+              <section class="focus-stage">
+                <div class="device-shot mobile-shot active">
+                  <img src="assets/mobile-6.jpeg" width="720" height="1600" alt="Mobile mostrando envio concluído com sucesso" />
+                </div>
+                <div class="transfer-lane complete" aria-hidden="true"><span></span></div>
+                <div class="device-shot desktop-shot active">
+                  <img src="assets/pigeon-desktop-4.png" width="1091" height="714" alt="Desktop na tela Recebidos com o arquivo queremos_spread.pdf salvo" />
+                </div>
+              </section>
+              <div class="flow-steps" aria-label="Etapas do fluxo">
+                <span class="done">rede</span><span class="done">peer</span><span class="done">arquivo</span><span class="done">aprovação</span><span class="active">concluído</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="slide" data-kicker="slide 9">
+            <div class="thanks">
+              <div class="logo big" aria-hidden="true">
+                <svg viewBox="0 0 32 32">
+                  <path d="M28 4L14 18M28 4l-10 24-4-10-10-4z" />
+                </svg>
+              </div>
+              <h1>Obrigado</h1>
+              <p>Pigeon: transferência local com descoberta automática e comunicação direta.</p>
+              <div class="team">
+                <span>Roberto</span><span>Zig</span><span>Luiz</span><span>Marina</span>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <div class="floating-progress" role="navigation" aria-label="Navegação dos slides">
+        <button class="nav-button" id="prev" type="button" tabindex="-1" aria-label="Slide anterior">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6" /></svg>
+        </button>
+        <div class="floating-status">
+          <div class="counter" id="slideCounter" aria-live="polite">01 / 11</div>
+          <div class="progress" aria-hidden="true"><span id="progressBar"></span></div>
+        </div>
+        <button class="nav-button" id="next" type="button" tabindex="-1" aria-label="Próximo slide">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
+        </button>
+      </div>
+    </main>
+
+    <script>
+      const slides = Array.from(document.querySelectorAll(".slide"));
+      const counter = document.getElementById("slideCounter");
+      const progress = document.getElementById("progressBar");
+      const prev = document.getElementById("prev");
+      const next = document.getElementById("next");
+      let index = 0;
+
+      function formatSlideNumber(value) {
+        return String(value).padStart(2, "0");
+      }
+
+      function indexFromHash() {
+        const match = window.location.hash.match(/^#slide-(\d+)$/);
+        if (!match) return 0;
+        return Math.max(0, Math.min(slides.length - 1, Number(match[1]) - 1));
+      }
+
+      function syncHash() {
+        const nextHash = `#slide-${index + 1}`;
+        if (window.location.hash !== nextHash) {
+          window.location.hash = nextHash;
+        }
+      }
+
+      function show(nextIndex, updateHash = true) {
+        index = Math.max(0, Math.min(slides.length - 1, nextIndex));
+        slides.forEach((slide, itemIndex) => {
+          slide.classList.toggle("active", itemIndex === index);
+        });
+        counter.textContent = `${formatSlideNumber(index + 1)} / ${formatSlideNumber(slides.length)}`;
+        progress.style.width = `${((index + 1) / slides.length) * 100}%`;
+        prev.disabled = index === 0;
+        next.disabled = index === slides.length - 1;
+        if (updateHash) syncHash();
+      }
+
+      function handleKeyboard(event) {
+        const forwardKeys = ["ArrowRight", "PageDown", " "];
+        const backwardKeys = ["ArrowLeft", "PageUp", "Backspace"];
+
+        if (forwardKeys.includes(event.key) || event.code === "Space") {
+          event.preventDefault();
+          show(index + 1);
+          return;
+        }
+
+        if (backwardKeys.includes(event.key)) {
+          event.preventDefault();
+          show(index - 1);
+          return;
+        }
+
+        if (event.key === "Home") {
+          event.preventDefault();
+          show(0);
+          return;
+        }
+
+        if (event.key === "End") {
+          event.preventDefault();
+          show(slides.length - 1);
+        }
+      }
+
+      prev.addEventListener("click", () => show(index - 1));
+      next.addEventListener("click", () => show(index + 1));
+      document.addEventListener("keydown", handleKeyboard, true);
+      window.addEventListener("hashchange", () => show(indexFromHash(), false));
+
+      show(indexFromHash());
+    </script>
+  </body>
+</html>
